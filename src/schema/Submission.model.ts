@@ -3,7 +3,7 @@ import mongoose, { Schema, Types } from "mongoose";
 const SubmissionSchema = new Schema(
   {
     userId: {
-      types: Types.ObjectId,
+      type: Types.ObjectId,
       ref: "User",
       required: true,
     },
@@ -14,7 +14,7 @@ const SubmissionSchema = new Schema(
     },
     content: {
       type: String,
-      require: true,
+      required: true,
     },
   },
   { timestamps: true }
