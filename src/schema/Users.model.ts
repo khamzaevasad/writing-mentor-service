@@ -16,7 +16,7 @@ const UserSchema = new Schema(
     userNick: {
       type: String,
       index: { unique: true, sparse: true },
-      require: true,
+      required: true,
     },
     userEmail: {
       type: String,
@@ -25,7 +25,7 @@ const UserSchema = new Schema(
     userPassword: {
       type: String,
       select: false,
-      require: true,
+      required: true,
     },
     targetLevel: {
       type: Number,
