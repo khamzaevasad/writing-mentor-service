@@ -1,0 +1,19 @@
+{
+  "name": "writing-mentor-service",
+  "version": "1.0.0",
+  "description": "This is writing mentor project backend",
+  "main": "src/server.ts",
+  "scripts": {
+    "start": "ts-node /src/server.ts",
+    "start:dev": "nodemon --exec ts-node src/server.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "KhamzaevAsad",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.1.11",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.9.3"
+  }
+}
