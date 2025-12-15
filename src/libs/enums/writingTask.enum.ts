@@ -1,4 +1,4 @@
-export enum Question {
+export enum Questions {
   FIFTY_ONE = 51,
   FIFTY_TWO = 52,
   FIFTY_THREE = 53,
