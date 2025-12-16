@@ -56,12 +56,9 @@ class Errors extends Error {
     message: Message.SOMETHING_WENT_WRONG,
   };
 
-  constructor(code: HttpCode, message: Message) {
-    super(message);
-    this.code = code;
-    this.message = message;
-
-    Error.captureStackTrace(this, this.constructor);
+  constructor(statusCode: HttpCode, statusMessage: Message) {
+    super();
+    (this.code = statusCode), (this.message = statusMessage);
   }
 }
 
