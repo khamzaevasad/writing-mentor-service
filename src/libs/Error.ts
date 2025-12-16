@@ -28,6 +28,9 @@ export enum Message {
   WRONG_PASSWORD = "Wrong password, please try again!",
   TOKEN_CREATION_FAILED = "Token creation Error!",
   TOKEN_NOT_PROVIDED = "Token not provided",
+  ALREADY_VERIFIED = "Account Already verified",
+  INVALID_OTP = "Invalid OTP",
+  OTP_EXPIRED = "OTP Expired",
 
   // Writing Task
   TASK_NOT_FOUND = "Writing task not found.",

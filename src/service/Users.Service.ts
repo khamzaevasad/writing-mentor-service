@@ -5,6 +5,8 @@ import * as bcrypt from "bcrypt";
 import Errors, { HttpCode, Message } from "../libs/Error";
 import { UserStatus } from "../libs/enums/user.enum";
 import { shapeIntoMongooseObjectId } from "../libs/config/config";
+import { SentMessageInfo } from "nodemailer";
+
 class UserService {
   private readonly userModel;
   constructor() {
@@ -69,6 +71,7 @@ class UserService {
         })
         .exec();
       if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+
       return result;
     } catch (err) {
       console.log("ERROR model:getUserDetail", err);
@@ -76,6 +79,61 @@ class UserService {
     }
   }
 
+  // generateVerifyOtp
+  public async generateVerifyOtp(
+    user: User
+  ): Promise<{ email: string; otp: string }> {
+    try {
+      const userId = shapeIntoMongooseObjectId(user._id);
+      const foundUser = await this.userModel.findById(userId).exec();
+
+      if (!foundUser)
+        throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+
+      if (foundUser.isAccountVerified)
+        throw new Errors(HttpCode.BAD_REQUEST, Message.ALREADY_VERIFIED);
+
+      const otp = String(Math.floor(100000 + Math.random() * 900000));
+
+      foundUser.verifyOtp = otp;
+      foundUser.verifyOtpExpireAt = Date.now() + 24 * 60 * 60 * 1000;
+      //  foundUser.verifyOtpExpireAt = Date.now() + 10 * 60 * 1000; < = 10min
+      await foundUser.save();
+
+      return { email: foundUser.userEmail, otp: otp };
+    } catch (err) {
+      logger.error("Error: model:generateVerifyOtp");
+      throw err;
+    }
+  }
+
+  // verifyEmail
+  public async verifyEmail(user: User, otp: string): Promise<User> {
+    try {
+      const userId = shapeIntoMongooseObjectId(user?._id);
+
+      const result = await this.userModel.findById(userId);
+
+      if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+
+      if (result.verifyOtp === "" || result.verifyOtp !== otp)
+        throw new Errors(HttpCode.BAD_REQUEST, Message.INVALID_OTP);
+
+      if (result.verifyOtpExpireAt < Date.now())
+        throw new Errors(HttpCode.BAD_REQUEST, Message.OTP_EXPIRED);
+
+      result.isAccountVerified = true;
+      user.verifyOtp = "";
+      user.verifyOtpExpireAt = 0;
+
+      await result.save();
+
+      return result;
+    } catch (err) {
+      console.log("Error model: verifyEmail");
+      throw err;
+    }
+  }
   // findUser
   public async findUser(id: string): Promise<User> {
     try {

@@ -43,14 +43,14 @@ authController.signup = async (req: Request, res: Response) => {
     });
 
     // Sending welcome email
-    const mainOptions = {
+    const mailOptions = {
       from: process.env.SENDER_EMAIL,
       to: input.userEmail,
       subject: "Welcome to Writing Mentor",
       text: `Welcome to Writing Mentor website, Your account has been created with email id: ${input.userEmail}`,
     };
 
-    await transporter.sendMail(mainOptions);
+    await transporter.sendMail(mailOptions);
     res.status(HttpCode.OK).json({ user: result, accessToken: token });
   } catch (err) {
     logger.error("Error signup", err);
@@ -104,12 +104,44 @@ authController.logout = async (req: Request, res: Response) => {
   }
 };
 
-// sendVerifyOtp
-authController.sendVerifyOtp = async (req: Request, res: Response) => {
+// generateVerifyOtp
+authController.generateVerifyOtp = async (
+  req: ExtendedRequest,
+  res: Response
+) => {
   try {
-    const userId = req.body;
+    logger.info("generateVerifyOtp");
+    const { email, otp } = await userService.generateVerifyOtp(req.user);
+
+    await transporter.sendMail({
+      from: process.env.SENDER_EMAIL,
+      to: email,
+      subject: "Account Verification OTP",
+      text: `Your OTP is ${otp}`,
+    });
+    res.status(HttpCode.OK).json({ success: true, message: "OTP sent" });
   } catch (err) {
-    logger.error("sendVerifyOtp", err);
+    logger.error("generateVerifyOtp", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
+// verifyEmail
+authController.verifyEmail = async (req: ExtendedRequest, res: Response) => {
+  try {
+    logger.info("verifyEmail");
+    const { otp } = req.body;
+    if (!otp) {
+      return res.json({ success: false, message: "Missing Details" });
+    }
+    const result = await userService.verifyEmail(req.user, otp);
+
+    res
+      .status(HttpCode.OK)
+      .json({ result: result, message: "email verify successfully" });
+  } catch (err) {
+    logger.error("verifyEmail", err);
     if (err instanceof Errors) res.status(err.code).json(err);
     else res.status(Errors.standard.code).json(Errors.standard);
   }

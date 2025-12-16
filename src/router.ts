@@ -11,5 +11,15 @@ router.get(
   authController.verifyAuth,
   authController.getUserDetail
 );
+router.post(
+  "/user/send-verify-otp",
+  authController.verifyAuth,
+  authController.generateVerifyOtp
+);
+router.post(
+  "/user/verify-account",
+  authController.verifyAuth,
+  authController.verifyEmail
+);
 
 export default router;
