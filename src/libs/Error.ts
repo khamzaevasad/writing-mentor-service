@@ -24,7 +24,7 @@ export enum Message {
   USER_FORBIDDEN = "You do not have permission to perform this action.",
   USER_BLOCKED = "Your account has been blocked. Please contact support.",
   USED_NICK_PHONE = "You are inserting already used nick or phone!",
-  NO_MEMBER_NICK = "No member with that member nick!",
+  NO_MEMBER_NICK = "No member found with that nickname or email address.",
   WRONG_PASSWORD = "Wrong password, please try again!",
   TOKEN_CREATION_FAILED = "Token creation Error!",
 

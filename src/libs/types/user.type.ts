@@ -23,3 +23,8 @@ export interface UserInput {
   userEmail: string;
   userPassword: string;
 }
+
+export interface LoginInput {
+  userEmail: string;
+  userPassword: string;
+}

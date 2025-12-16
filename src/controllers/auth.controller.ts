@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { T } from "../libs/types/common.types";
 import logger from "../libs/utils/logger";
 import Errors, { HttpCode } from "../libs/Error";
-import { UserInput } from "../libs/types/user.type";
+import { LoginInput, UserInput } from "../libs/types/user.type";
 import AuthService from "../service/Auth.service";
 import UserService from "../service/Users.Service";
 import { AUTH_TIMER } from "../libs/config";
@@ -11,6 +11,7 @@ const authController: T = {};
 const authService = new AuthService();
 const userService = new UserService();
 
+// signup
 authController.signup = async (req: Request, res: Response) => {
   const input: UserInput = req.body;
   if (!input.userName || !input.userEmail || !input.userPassword) {
@@ -18,17 +19,46 @@ authController.signup = async (req: Request, res: Response) => {
   }
   try {
     logger.info("signup");
-
     const result = await userService.signup(input);
     const token = await authService.createToken(result);
-
     res.cookie("accessToken", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       maxAge: AUTH_TIMER * 3600 * 1000,
-      httpOnly: false,
     });
     res.status(HttpCode.OK).json({ user: result, accessToken: token });
   } catch (err) {
     logger.error("Error signup", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
+// login
+authController.login = async (req: Request, res: Response) => {
+  const input: LoginInput = req.body;
+
+  if (!input.userEmail || !input.userPassword) {
+    return res.json({
+      success: false,
+      message: "Email and password are required",
+    });
+  }
+
+  try {
+    logger.info("login");
+    const result = await userService.login(input);
+    const token = await authService.createToken(result);
+    res.cookie("accessToken", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      maxAge: AUTH_TIMER * 3600 * 1000,
+    });
+    res.status(HttpCode.OK).json({ user: result, accessToken: token });
+  } catch (err) {
+    logger.error("Error login", err);
     if (err instanceof Errors) res.status(err.code).json(err);
     else res.status(Errors.standard.code).json(Errors.standard);
   }
