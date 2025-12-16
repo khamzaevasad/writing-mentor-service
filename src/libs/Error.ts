@@ -23,6 +23,10 @@ export enum Message {
   USER_NOT_AUTHENTICATED = "Please login to continue.",
   USER_FORBIDDEN = "You do not have permission to perform this action.",
   USER_BLOCKED = "Your account has been blocked. Please contact support.",
+  USED_NICK_PHONE = "You are inserting already used nick or phone!",
+  NO_MEMBER_NICK = "No member with that member nick!",
+  WRONG_PASSWORD = "Wrong password, please try again!",
+  TOKEN_CREATION_FAILED = "Token creation Error!",
 
   // Writing Task
   TASK_NOT_FOUND = "Writing task not found.",

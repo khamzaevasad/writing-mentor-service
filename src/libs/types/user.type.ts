@@ -1,12 +1,25 @@
-import { ObjectId } from "mongoose";
-import { TargetLevel } from "../enums/user.enum";
+import { Types } from "mongoose";
+import { TargetLevel, UserStatus, UserType } from "../enums/user.enum";
 
 export interface User {
-  _id: ObjectId;
-  userNick: string;
-  email: string;
-  password?: string;
-  targetLevel?: TargetLevel;
+  _id: Types.ObjectId;
+  userType: UserType;
+  userStatus: UserStatus;
+  userName: string;
+  userEmail: string;
+  userPassword?: string;
+  verifyOtp: string;
+  verifyOtpExpireAt: number;
+  isAccountVerified: boolean;
+  resetOtp: string;
+  resetOtpExpireAt: number;
+  targetLevel: TargetLevel;
   createdAt: Date;
-  updateAt: Date;
+  updatedAt: Date;
+}
+
+export interface UserInput {
+  userName: string;
+  userEmail: string;
+  userPassword: string;
 }

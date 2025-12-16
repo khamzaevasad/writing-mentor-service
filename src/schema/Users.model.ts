@@ -13,7 +13,7 @@ const UserSchema = new Schema(
       enum: UserStatus,
       default: UserStatus.ACTIVE,
     },
-    userNick: {
+    userName: {
       type: String,
       index: { unique: true, sparse: true },
       required: true,
@@ -21,15 +21,38 @@ const UserSchema = new Schema(
     userEmail: {
       type: String,
       index: { unique: true, sparse: true },
+      lowercase: true,
+      trim: true,
+      required: true,
     },
     userPassword: {
       type: String,
       select: false,
       required: true,
     },
+    verifyOtp: {
+      type: String,
+      default: "",
+    },
+    verifyOtpExpireAt: {
+      type: Number,
+      default: 0,
+    },
+    isAccountVerified: {
+      type: Boolean,
+      default: false,
+    },
+    resetOtp: {
+      type: String,
+      default: "",
+    },
+    resetOtpExpireAt: {
+      type: Number,
+      default: 0,
+    },
     targetLevel: {
       type: Number,
-      enum: TargetLevel,
+      enum: Object.values(TargetLevel).filter((v) => typeof v === "number"),
       default: TargetLevel.FIVE,
     },
   },
