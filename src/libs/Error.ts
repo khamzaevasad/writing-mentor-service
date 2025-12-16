@@ -27,6 +27,7 @@ export enum Message {
   NO_MEMBER_NICK = "No member found with that nickname or email address.",
   WRONG_PASSWORD = "Wrong password, please try again!",
   TOKEN_CREATION_FAILED = "Token creation Error!",
+  TOKEN_NOT_PROVIDED = "Token not provided",
 
   // Writing Task
   TASK_NOT_FOUND = "Writing task not found.",

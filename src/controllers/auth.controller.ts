@@ -1,8 +1,12 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { T } from "../libs/types/common.types";
 import logger from "../libs/utils/logger";
-import Errors, { HttpCode } from "../libs/Error";
-import { LoginInput, UserInput } from "../libs/types/user.type";
+import Errors, { HttpCode, Message } from "../libs/Error";
+import {
+  ExtendedRequest,
+  LoginInput,
+  UserInput,
+} from "../libs/types/user.type";
 import AuthService from "../service/Auth.service";
 import UserService from "../service/Users.Service";
 import { AUTH_TIMER } from "../libs/config/config";
@@ -34,7 +38,7 @@ authController.signup = async (req: Request, res: Response) => {
       if (error) {
         console.error("SMTP ERROR ❌", error);
       } else {
-        console.log("SMTP READY ✅");
+        console.log("SMTP READY ✅", success);
       }
     });
 
@@ -95,6 +99,58 @@ authController.logout = async (req: Request, res: Response) => {
     res.status(HttpCode.OK).json({ logout: true });
   } catch (err) {
     logger.error("Error logout", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
+// sendVerifyOtp
+authController.sendVerifyOtp = async (req: Request, res: Response) => {
+  try {
+    const userId = req.body;
+  } catch (err) {
+    logger.error("sendVerifyOtp", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
+// getUser
+authController.getUserDetail = async (req: ExtendedRequest, res: Response) => {
+  try {
+    logger.info("getUserDetail");
+    const result = await userService.getUserDetail(req.user);
+    res.status(HttpCode.OK).json(result);
+  } catch (err) {
+    logger.error("getUserDetail", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
+// verifyAuth middleware
+authController.verifyAuth = async (
+  req: ExtendedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    logger.info("verifyAuth");
+
+    const token = req.cookies["accessToken"];
+
+    if (!token)
+      throw new Errors(HttpCode.UNAUTHORIZED, Message.TOKEN_NOT_PROVIDED);
+
+    const user = await authService.checkAuth(token);
+    if (!user)
+      throw new Errors(HttpCode.UNAUTHORIZED, Message.USER_NOT_AUTHENTICATED);
+
+    req.user = user;
+
+    next();
+  } catch (err) {
+    logger.error("verifyAuth", err);
     if (err instanceof Errors) res.status(err.code).json(err);
     else res.status(Errors.standard.code).json(Errors.standard);
   }

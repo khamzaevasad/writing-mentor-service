@@ -4,6 +4,7 @@ import UsersModel from "../schema/Users.model";
 import * as bcrypt from "bcrypt";
 import Errors, { HttpCode, Message } from "../libs/Error";
 import { UserStatus } from "../libs/enums/user.enum";
+import { shapeIntoMongooseObjectId } from "../libs/config/config";
 class UserService {
   private readonly userModel;
   constructor() {
@@ -54,6 +55,40 @@ class UserService {
     } catch (err) {
       logger.error("Error: model:login", err);
       throw err;
+    }
+  }
+
+  // getUser
+  public async getUserDetail(user: User): Promise<User> {
+    try {
+      const userId = shapeIntoMongooseObjectId(user._id);
+      const result = await this.userModel
+        .findOne({
+          _id: userId,
+          userStatus: UserStatus.ACTIVE,
+        })
+        .exec();
+      if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+      return result;
+    } catch (err) {
+      console.log("ERROR model:getUserDetail", err);
+      throw err;
+    }
+  }
+
+  // findUser
+  public async findUser(id: string): Promise<User> {
+    try {
+      const userId = shapeIntoMongooseObjectId(id);
+      const result = await this.userModel
+        .findById(userId)
+        .select("-userPassword")
+        .exec();
+      if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+      return result;
+    } catch (err) {
+      logger.error("Error: model:findUser", err);
+      throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
     }
   }
 }

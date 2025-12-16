@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
 import { TargetLevel, UserStatus, UserType } from "../enums/user.enum";
-
+import { Request } from "express";
 export interface User {
   _id: Types.ObjectId;
   userType: UserType;
@@ -27,4 +27,8 @@ export interface UserInput {
 export interface LoginInput {
   userEmail: string;
   userPassword: string;
+}
+
+export interface ExtendedRequest extends Request {
+  user: User;
 }
