@@ -5,7 +5,8 @@ import Errors, { HttpCode } from "../libs/Error";
 import { LoginInput, UserInput } from "../libs/types/user.type";
 import AuthService from "../service/Auth.service";
 import UserService from "../service/Users.Service";
-import { AUTH_TIMER } from "../libs/config";
+import { AUTH_TIMER } from "../libs/config/config";
+import transporter from "../libs/config/nodemailer";
 const authController: T = {};
 
 const authService = new AuthService();
@@ -27,6 +28,25 @@ authController.signup = async (req: Request, res: Response) => {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       maxAge: AUTH_TIMER * 3600 * 1000,
     });
+
+    // testEmail
+    transporter.verify((error, success) => {
+      if (error) {
+        console.error("SMTP ERROR ❌", error);
+      } else {
+        console.log("SMTP READY ✅");
+      }
+    });
+
+    // Sending welcome email
+    const mainOptions = {
+      from: process.env.SENDER_EMAIL,
+      to: input.userEmail,
+      subject: "Welcome to Writing Mentor",
+      text: `Welcome to Writing Mentor website, Your account has been created with email id: ${input.userEmail}`,
+    };
+
+    await transporter.sendMail(mainOptions);
     res.status(HttpCode.OK).json({ user: result, accessToken: token });
   } catch (err) {
     logger.error("Error signup", err);

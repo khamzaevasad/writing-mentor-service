@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { AUTH_TIMER } from "../libs/config";
+import { AUTH_TIMER } from "../libs/config/config";
 import { User } from "../libs/types/user.type";
 import Errors, { HttpCode, Message } from "../libs/Error";
 import logger from "../libs/utils/logger";
