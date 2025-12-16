@@ -64,4 +64,20 @@ authController.login = async (req: Request, res: Response) => {
   }
 };
 
+// logout
+authController.logout = async (req: Request, res: Response) => {
+  try {
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+    });
+    res.status(HttpCode.OK).json({ logout: true });
+  } catch (err) {
+    logger.error("Error logout", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
 export default authController;
