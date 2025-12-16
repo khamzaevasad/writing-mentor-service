@@ -147,6 +147,51 @@ authController.verifyEmail = async (req: ExtendedRequest, res: Response) => {
   }
 };
 
+// sendResetOtp
+authController.sendResetOtp = async (req: Request, res: Response) => {
+  try {
+    logger.info("sendResetOtp");
+    const { userEmail } = req.body;
+    if (!userEmail)
+      throw new Errors(HttpCode.BAD_REQUEST, Message.EMAIL_REQUIRED);
+
+    const { email, otp } = await userService.sendResetOtp(userEmail);
+
+    await transporter.sendMail({
+      from: process.env.SENDER_EMAIL,
+      to: email,
+      subject: "Password Reset OTP",
+      text: `Your OTP for resetting your password is ${otp}. Use this OTP to proceed with resetting your password`,
+    });
+    res
+      .status(HttpCode.OK)
+      .json({ success: "true", message: "OTP sent Your email" });
+  } catch (err) {
+    logger.error("sendRestOtp");
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
+// resetPassword
+authController.resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { userEmail, otp, newPassword } = req.body;
+    if (!userEmail || !otp || !newPassword)
+      throw new Errors(HttpCode.BAD_REQUEST, Message.ALL_REQUIRED);
+
+    const result = await userService.resetPassword(userEmail, otp, newPassword);
+
+    res
+      .status(HttpCode.OK)
+      .json({ user: result, message: Message.RESET_PASSWORD });
+  } catch (err) {
+    logger.error("resetPassword", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
 // getUser
 authController.getUserDetail = async (req: ExtendedRequest, res: Response) => {
   try {

@@ -31,6 +31,9 @@ export enum Message {
   ALREADY_VERIFIED = "Account Already verified",
   INVALID_OTP = "Invalid OTP",
   OTP_EXPIRED = "OTP Expired",
+  EMAIL_REQUIRED = "Email is required",
+  ALL_REQUIRED = "All required fields must be provided.",
+  RESET_PASSWORD = "Password has been successfully",
 
   // Writing Task
   TASK_NOT_FOUND = "Writing task not found.",

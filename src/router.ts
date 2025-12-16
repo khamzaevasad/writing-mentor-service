@@ -22,4 +22,7 @@ router.post(
   authController.verifyEmail
 );
 
+router.post("/user/send-reset-otp", authController.sendResetOtp);
+router.post("/user/reset-password", authController.resetPassword);
+
 export default router;

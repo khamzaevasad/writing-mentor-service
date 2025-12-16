@@ -134,6 +134,65 @@ class UserService {
       throw err;
     }
   }
+
+  // sendResetOtp
+  public async sendResetOtp(
+    userEmail: string
+  ): Promise<{ email: string; otp: string }> {
+    try {
+      const user = await this.userModel.findOne({ userEmail }).exec();
+
+      if (!user) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+
+      const otp = String(Math.floor(100000 + Math.random() * 900000));
+
+      user.resetOtp = otp;
+      user.resetOtpExpireAt = Date.now() + 15 * 60 * 1000;
+
+      await user.save();
+
+      return { email: user.userEmail, otp: otp };
+    } catch (err) {
+      logger.error("Error model: sendResetOtp");
+      throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+    }
+  }
+
+  // resetPassword
+  public async resetPassword(
+    userEmail: string,
+    otp: string,
+    newPassword: string
+  ): Promise<User> {
+    try {
+      const user = await this.userModel
+        .findOne({ userEmail })
+        .select("+userPassword")
+        .exec();
+
+      if (!user) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+
+      if (user.resetOtp === "" || user.resetOtp !== otp)
+        throw new Errors(HttpCode.BAD_REQUEST, Message.INVALID_OTP);
+
+      if (user.resetOtpExpireAt < Date.now())
+        throw new Errors(HttpCode.BAD_REQUEST, Message.OTP_EXPIRED);
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      user.userPassword = hashedPassword;
+      user.resetOtp = "";
+      user.resetOtpExpireAt = 0;
+
+      await user.save();
+
+      return user;
+    } catch (err) {
+      console.log("Error Model: resetPassword", err);
+      throw err;
+    }
+  }
+
   // findUser
   public async findUser(id: string): Promise<User> {
     try {
