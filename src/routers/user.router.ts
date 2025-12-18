@@ -2,6 +2,7 @@ import express from "express";
 import authController from "../controllers/auth.controller";
 import userController from "../controllers/Users.controller";
 import makeUpLoader from "../libs/utils/uploader";
+import evaluationController from "../controllers/evaluation.controller";
 
 const userRouter = express.Router();
 
@@ -33,6 +34,13 @@ userRouter.post(
   authController.verifyAuth,
   makeUpLoader("users").single("userImage"),
   userController.updateUser
+);
+
+// openAI
+userRouter.post(
+  "/generate-task",
+  authController.verifyAuth,
+  evaluationController.generateWritingTask
 );
 
 export default userRouter;
