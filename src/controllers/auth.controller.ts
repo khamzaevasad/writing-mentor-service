@@ -225,4 +225,15 @@ authController.verifyAuth = async (
   }
 };
 
+// roleMiddleware
+authController.roleMiddleware = async (req: ExtendedRequest, res: Response) => {
+  try {
+    logger.info("roleMiddleware");
+  } catch (err) {
+    logger.error("roleMiddleware", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
 export default authController;

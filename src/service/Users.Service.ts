@@ -3,7 +3,7 @@ import { LoginInput, User, UserInput } from "../libs/types/user.type";
 import UsersModel from "../schema/Users.model";
 import * as bcrypt from "bcrypt";
 import Errors, { HttpCode, Message } from "../libs/Error";
-import { UserStatus } from "../libs/enums/user.enum";
+import { UserStatus, UserType } from "../libs/enums/user.enum";
 import { shapeIntoMongooseObjectId } from "../libs/config/config";
 
 class UserService {
@@ -205,6 +205,21 @@ class UserService {
       return result;
     } catch (err) {
       logger.error("Error: model:findUser", err);
+      throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+    }
+  }
+
+  /** For Admin **/
+
+  public async getAllUsers(): Promise<User[]> {
+    try {
+      const result = await this.userModel
+        .find({ userType: UserType.USER })
+        .exec();
+      if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+
+      return result;
+    } catch (err) {
       throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
     }
   }
