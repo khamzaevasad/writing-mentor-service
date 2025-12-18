@@ -37,6 +37,11 @@ const UserSchema = new Schema(
     userDesc: {
       type: String,
     },
+    refreshToken: {
+      type: String,
+      select: false,
+      default: null,
+    },
     verifyOtp: {
       type: String,
       default: "",

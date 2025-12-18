@@ -10,6 +10,7 @@ import * as bcrypt from "bcrypt";
 import Errors, { HttpCode, Message } from "../libs/Error";
 import { UserStatus, UserType } from "../libs/enums/user.enum";
 import { shapeIntoMongooseObjectId } from "../libs/config/config";
+import { Types } from "mongoose";
 
 class UserService {
   private readonly userModel;
@@ -224,6 +225,43 @@ class UserService {
 
     if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATE_FAILED);
     return result;
+  }
+
+  // updateRefreshToken
+  public async updateRefreshToken(
+    id: Types.ObjectId | string,
+    token: string
+  ): Promise<void> {
+    try {
+      const refreshToken = await bcrypt.hash(token, 10);
+      await this.userModel
+        .findOneAndUpdate(
+          { _id: id },
+          { $set: { refreshToken: refreshToken } },
+          { new: true }
+        )
+        .exec();
+    } catch (err) {
+      console.log("Error model: updateRefreshToken", err);
+      throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATE_FAILED);
+    }
+  }
+
+  // findUserWithRefresh
+  public async findUserWithRefresh(id: string): Promise<User> {
+    try {
+      const result = await this.userModel
+        .findById(id)
+        .select("+refreshToken")
+        .exec();
+
+      if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+
+      return result;
+    } catch (err) {
+      console.log("Error model: findUserWithRefresh", err);
+      throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+    }
   }
 
   /** For Admin **/

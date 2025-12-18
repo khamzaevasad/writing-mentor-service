@@ -1,3 +1,4 @@
+import * as bcrypt from "bcrypt";
 import { NextFunction, Request, Response } from "express";
 import { T } from "../libs/types/common.types";
 import logger from "../libs/utils/logger";
@@ -9,12 +10,36 @@ import {
 } from "../libs/types/user.type";
 import AuthService from "../service/Auth.service";
 import UserService from "../service/Users.Service";
-import { AUTH_TIMER } from "../libs/config/config";
+import {
+  AUTH_TIMER_ACCESS,
+  AUTH_TIMER_REFRESH_HOURS,
+} from "../libs/config/config";
 import transporter from "../libs/config/nodemailer";
 const authController: T = {};
 
 const authService = new AuthService();
 const userService = new UserService();
+
+// helper functions for cookie options
+const getAccessTokenCookieOptions = () => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: (process.env.NODE_ENV === "production" ? "none" : "strict") as
+    | "none"
+    | "strict",
+  maxAge: AUTH_TIMER_ACCESS * 60 * 1000,
+  path: "/",
+});
+
+const getRefreshTokenCookieOptions = () => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: (process.env.NODE_ENV === "production" ? "none" : "strict") as
+    | "none"
+    | "strict",
+  maxAge: AUTH_TIMER_REFRESH_HOURS * 60 * 60 * 1000,
+  path: "/",
+});
 
 // signup
 authController.signup = async (req: Request, res: Response) => {
@@ -25,13 +50,8 @@ authController.signup = async (req: Request, res: Response) => {
   try {
     logger.info("signup");
     const result = await userService.signup(input);
-    const token = await authService.createToken(result);
-    res.cookie("accessToken", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-      maxAge: AUTH_TIMER * 3600 * 1000,
-    });
+    const token = await authService.createAccessToken(result);
+    res.cookie("accessToken", token, getAccessTokenCookieOptions());
 
     // Sending welcome email
     const mailOptions = {
@@ -64,14 +84,14 @@ authController.login = async (req: Request, res: Response) => {
   try {
     logger.info("login");
     const result = await userService.login(input);
-    const token = await authService.createToken(result);
-    res.cookie("accessToken", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-      maxAge: AUTH_TIMER * 3600 * 1000,
-    });
-    res.status(HttpCode.OK).json({ user: result, accessToken: token });
+    const accessToken = await authService.createAccessToken(result);
+    const refreshToken = await authService.createRefreshToken(result._id);
+    await userService.updateRefreshToken(result._id, refreshToken);
+
+    res.cookie("accessToken", accessToken, getAccessTokenCookieOptions());
+    res.cookie("refreshToken", refreshToken, getRefreshTokenCookieOptions());
+
+    res.status(HttpCode.OK).json({ user: result, accessToken: accessToken });
   } catch (err) {
     logger.error("Error login", err);
     if (err instanceof Errors) res.status(err.code).json(err);
@@ -79,15 +99,77 @@ authController.login = async (req: Request, res: Response) => {
   }
 };
 
+// refreshToken
+authController.refreshToken = async (req: ExtendedRequest, res: Response) => {
+  try {
+    logger.info("refreshToken");
+
+    const refreshToken = req.cookies?.refreshToken;
+    if (!refreshToken) {
+      logger.warn("No refresh token in cookies");
+      throw new Errors(HttpCode.UNAUTHORIZED, Message.USER_NOT_AUTHENTICATED);
+    }
+
+    const decoded = await authService.decoded(refreshToken);
+    logger.info(
+      `Refresh token decoded for user  ${decoded.userName} | ${decoded._id}`
+    );
+
+    const user = await userService.findUserWithRefresh(decoded._id);
+
+    if (!user || !user.refreshToken) {
+      logger.warn(`User not found or no refresh token: ${decoded._id}`);
+      throw new Errors(HttpCode.UNAUTHORIZED, Message.USER_NOT_AUTHENTICATED);
+    }
+
+    const isValid = await bcrypt.compare(refreshToken, user.refreshToken);
+
+    if (!isValid) {
+      logger.warn(`Invalid refresh token for user: ${decoded._id}`);
+      throw new Errors(HttpCode.UNAUTHORIZED, Message.USER_NOT_AUTHENTICATED);
+    }
+    const newAccessToken = await authService.createAccessToken(user);
+    const newRefreshToken = await authService.createRefreshToken(user._id);
+
+    await userService.updateRefreshToken(user._id, newRefreshToken);
+    logger.info(`Token refreshed for user ${decoded._id}`);
+
+    res.cookie("accessToken", newAccessToken, getAccessTokenCookieOptions());
+
+    res.cookie("refreshToken", newRefreshToken, getRefreshTokenCookieOptions());
+
+    res
+      .status(HttpCode.OK)
+      .json({ refreshed: true, accessToken: newAccessToken });
+  } catch (err) {
+    logger.error("Error refreshToken", err);
+    res.clearCookie("accessToken", { path: "/" });
+    res.clearCookie("refreshToken", { path: "/" });
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
 // logout
-authController.logout = async (req: Request, res: Response) => {
+authController.logout = async (req: ExtendedRequest, res: Response) => {
   try {
     logger.info("logout");
-    res.clearCookie("accessToken", {
+    if (req.user?._id) {
+      await userService.updateRefreshToken(req.user._id, "");
+    }
+
+    const clearOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-    });
+      sameSite: (process.env.NODE_ENV === "production" ? "none" : "strict") as
+        | "none"
+        | "strict",
+      path: "/",
+    };
+
+    res.clearCookie("accessToken", clearOptions);
+
+    res.clearCookie("refreshToken", clearOptions);
     res.status(HttpCode.OK).json({ logout: true });
   } catch (err) {
     logger.error("Error logout", err);

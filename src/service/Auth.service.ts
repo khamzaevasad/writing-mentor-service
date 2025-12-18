@@ -1,10 +1,14 @@
 import jwt from "jsonwebtoken";
-import { AUTH_TIMER } from "../libs/config/config";
-import { User } from "../libs/types/user.type";
+import {
+  AUTH_TIMER_ACCESS,
+  AUTH_TIMER_REFRESH_HOURS,
+} from "../libs/config/config";
+import { User, UserDecoded } from "../libs/types/user.type";
 import Errors, { HttpCode, Message } from "../libs/Error";
 import logger from "../libs/utils/logger";
 import UserService from "./Users.Service";
 import { UserStatus } from "../libs/enums/user.enum";
+import { Types } from "mongoose";
 
 class AuthService {
   private readonly secretToken;
@@ -15,9 +19,9 @@ class AuthService {
     this.userService = new UserService();
   }
 
-  public async createToken(payload: User) {
+  public async createAccessToken(payload: User) {
     return new Promise((resolve, reject) => {
-      const duration = `${AUTH_TIMER}h`;
+      const duration = `${AUTH_TIMER_ACCESS}m`;
       jwt.sign(
         {
           _id: payload._id,
@@ -34,6 +38,21 @@ class AuthService {
         }
       );
     });
+  }
+
+  public async createRefreshToken(id: Types.ObjectId) {
+    const duration = `${AUTH_TIMER_REFRESH_HOURS}h`;
+    return jwt.sign({ _id: id }, this.secretToken, {
+      expiresIn: duration,
+    });
+  }
+
+  public async decoded(token: string): Promise<UserDecoded> {
+    try {
+      return jwt.verify(token, this.secretToken) as UserDecoded;
+    } catch (err) {
+      throw new Errors(HttpCode.UNAUTHORIZED, Message.USER_NOT_AUTHENTICATED);
+    }
   }
 
   public async checkAuth(token: string): Promise<User | null> {

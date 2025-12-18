@@ -10,6 +10,7 @@ export interface User {
   userPassword?: string;
   userImage?: string | null;
   userDesc?: string | null;
+  refreshToken?: string | null;
   verifyOtp: string;
   verifyOtpExpireAt: number;
   isAccountVerified: boolean;
@@ -38,6 +39,10 @@ export interface LoginInput {
   userPassword: string;
 }
 
+export interface UserDecoded {
+  _id: string;
+  userName: string;
+}
 export interface ExtendedRequest extends Request {
   user: User;
   file: Express.Multer.File;

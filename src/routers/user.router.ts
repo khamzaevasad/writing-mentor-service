@@ -26,7 +26,7 @@ userRouter.post(
   authController.verifyAuth,
   authController.verifyEmail
 );
-
+userRouter.post("/auth/refresh-token", authController.refreshToken);
 // update
 userRouter.post(
   "/update",
