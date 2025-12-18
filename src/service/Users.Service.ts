@@ -5,7 +5,6 @@ import * as bcrypt from "bcrypt";
 import Errors, { HttpCode, Message } from "../libs/Error";
 import { UserStatus } from "../libs/enums/user.enum";
 import { shapeIntoMongooseObjectId } from "../libs/config/config";
-import { SentMessageInfo } from "nodemailer";
 
 class UserService {
   private readonly userModel;
@@ -22,9 +21,9 @@ class UserService {
       const result = await this.userModel.create(input);
       result.userPassword = "";
       return result.toJSON();
-    } catch (err) {
+    } catch (err: any) {
       logger.error("Error: model:signup", err);
-      throw new Errors(HttpCode.BAD_REQUEST, Message.USED_NICK_PHONE);
+      throw new Errors(HttpCode.BAD_REQUEST, Message.ALREADY_EXISTS);
     }
   }
 
@@ -53,6 +52,7 @@ class UserService {
       if (!isMatch)
         throw new Errors(HttpCode.UNAUTHORIZED, Message.WRONG_PASSWORD);
 
+      user.userPassword = "";
       return user;
     } catch (err) {
       logger.error("Error: model:login", err);
@@ -123,8 +123,8 @@ class UserService {
         throw new Errors(HttpCode.BAD_REQUEST, Message.OTP_EXPIRED);
 
       result.isAccountVerified = true;
-      user.verifyOtp = "";
-      user.verifyOtpExpireAt = 0;
+      result.verifyOtp = "";
+      result.verifyOtpExpireAt = 0;
 
       await result.save();
 

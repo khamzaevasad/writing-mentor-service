@@ -34,6 +34,7 @@ export enum Message {
   EMAIL_REQUIRED = "Email is required",
   ALL_REQUIRED = "All required fields must be provided.",
   RESET_PASSWORD = "Password has been successfully",
+  ALREADY_EXISTS = "This email or username is already in use.",
 
   // Writing Task
   TASK_NOT_FOUND = "Writing task not found.",

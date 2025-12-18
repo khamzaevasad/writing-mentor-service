@@ -20,10 +20,11 @@ const UserSchema = new Schema(
     },
     userEmail: {
       type: String,
-      index: { unique: true, sparse: true },
+      unique: true,
       lowercase: true,
       trim: true,
       required: true,
+      match: [/^\S+@\S+\.\S+$/, "Invalid email format"],
     },
     userPassword: {
       type: String,

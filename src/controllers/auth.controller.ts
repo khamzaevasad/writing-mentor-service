@@ -33,15 +33,6 @@ authController.signup = async (req: Request, res: Response) => {
       maxAge: AUTH_TIMER * 3600 * 1000,
     });
 
-    // testEmail
-    transporter.verify((error, success) => {
-      if (error) {
-        console.error("SMTP ERROR ❌", error);
-      } else {
-        console.log("SMTP READY ✅", success);
-      }
-    });
-
     // Sending welcome email
     const mailOptions = {
       from: process.env.SENDER_EMAIL,
@@ -91,6 +82,7 @@ authController.login = async (req: Request, res: Response) => {
 // logout
 authController.logout = async (req: Request, res: Response) => {
   try {
+    logger.info("logout");
     res.clearCookie("accessToken", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -217,7 +209,7 @@ authController.verifyAuth = async (
     const token = req.cookies["accessToken"];
 
     if (!token)
-      throw new Errors(HttpCode.UNAUTHORIZED, Message.TOKEN_NOT_PROVIDED);
+      throw new Errors(HttpCode.UNAUTHORIZED, Message.USER_NOT_AUTHENTICATED);
 
     const user = await authService.checkAuth(token);
     if (!user)
