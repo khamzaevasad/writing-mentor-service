@@ -9,6 +9,6 @@ export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
   if (!extendedReq.user)
     throw new Errors(HttpCode.UNAUTHORIZED, Message.USER_NOT_AUTHENTICATED);
   if (extendedReq.user.userType !== UserType.ADMIN)
-    throw new Errors(HttpCode.FORBIDDEN, Message.ADMIN_ACCESS);
+    res.status(HttpCode.FORBIDDEN).json({ message: Message.ADMIN_ACCESS });
   next();
 };

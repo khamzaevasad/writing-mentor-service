@@ -43,6 +43,12 @@ export interface UserDecoded {
   _id: string;
   userName: string;
 }
+
+export interface UserStats {
+  totalUsers: number;
+  verifiedUsers: number;
+  unverifiedUsers: number;
+}
 export interface ExtendedRequest extends Request {
   user: User;
   file: Express.Multer.File;

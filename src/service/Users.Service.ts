@@ -3,6 +3,7 @@ import {
   LoginInput,
   User,
   UserInput,
+  UserStats,
   userUpdateInput,
 } from "../libs/types/user.type";
 import UsersModel from "../schema/Users.model";
@@ -10,7 +11,7 @@ import * as bcrypt from "bcrypt";
 import Errors, { HttpCode, Message } from "../libs/Error";
 import { UserStatus, UserType } from "../libs/enums/user.enum";
 import { shapeIntoMongooseObjectId } from "../libs/config/config";
-import { Types } from "mongoose";
+import { PreMiddlewareFunction, Types } from "mongoose";
 
 class UserService {
   private readonly userModel;
@@ -25,7 +26,12 @@ class UserService {
 
     try {
       const result = await this.userModel.create(input);
+
       result.userPassword = "";
+
+      if (result.userType === UserType.ADMIN)
+        throw new Errors(HttpCode.NOT_MODIFIED, Message.SOMETHING_WENT_WRONG);
+
       return result.toJSON();
     } catch (err: any) {
       logger.error("Error: model:signup", err);
@@ -275,6 +281,28 @@ class UserService {
       if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 
       return result;
+    } catch (err) {
+      throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+    }
+  }
+
+  public async overview(): Promise<UserStats> {
+    try {
+      const totalUsers = await this.userModel
+        .countDocuments({ userType: { $ne: UserType.ADMIN } })
+        .exec();
+      const verifiedUsers = await this.userModel
+        .countDocuments({
+          userType: { $ne: UserType.ADMIN },
+          isAccountVerified: true,
+        })
+        .exec();
+      const unverifiedUsers = totalUsers - verifiedUsers;
+      return {
+        totalUsers: totalUsers,
+        verifiedUsers: verifiedUsers,
+        unverifiedUsers: unverifiedUsers,
+      };
     } catch (err) {
       throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
     }

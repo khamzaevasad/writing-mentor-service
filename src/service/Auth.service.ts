@@ -19,6 +19,7 @@ class AuthService {
     this.userService = new UserService();
   }
 
+  // createAccessToken
   public async createAccessToken(payload: User) {
     return new Promise((resolve, reject) => {
       const duration = `${AUTH_TIMER_ACCESS}m`;
@@ -40,6 +41,7 @@ class AuthService {
     });
   }
 
+  // createRefreshToken
   public async createRefreshToken(id: Types.ObjectId) {
     const duration = `${AUTH_TIMER_REFRESH_HOURS}h`;
     return jwt.sign({ _id: id }, this.secretToken, {
@@ -47,6 +49,7 @@ class AuthService {
     });
   }
 
+  // decoded
   public async decoded(token: string): Promise<UserDecoded> {
     try {
       return jwt.verify(token, this.secretToken) as UserDecoded;
@@ -55,6 +58,7 @@ class AuthService {
     }
   }
 
+  // checkAuth
   public async checkAuth(token: string): Promise<User | null> {
     try {
       const decoded = jwt.verify(token, this.secretToken) as {

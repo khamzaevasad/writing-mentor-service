@@ -10,4 +10,6 @@ adminRouter.use(isAdmin);
 
 adminRouter.get("/get-all-users", adminController.getAllUsers);
 
+adminRouter.get("/overview", adminController.overview);
+
 export default adminRouter;

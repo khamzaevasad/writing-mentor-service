@@ -50,8 +50,12 @@ authController.signup = async (req: Request, res: Response) => {
   try {
     logger.info("signup");
     const result = await userService.signup(input);
-    const token = await authService.createAccessToken(result);
-    res.cookie("accessToken", token, getAccessTokenCookieOptions());
+    const accessToken = await authService.createAccessToken(result);
+    const refreshToken = await authService.createRefreshToken(result._id);
+    await userService.updateRefreshToken(result._id, refreshToken);
+
+    res.cookie("accessToken", accessToken, getAccessTokenCookieOptions());
+    res.cookie("refreshToken", accessToken, getRefreshTokenCookieOptions());
 
     // Sending welcome email
     const mailOptions = {
@@ -62,7 +66,7 @@ authController.signup = async (req: Request, res: Response) => {
     };
 
     await transporter.sendMail(mailOptions);
-    res.status(HttpCode.OK).json({ user: result, accessToken: token });
+    res.status(HttpCode.OK).json({ user: result, accessToken: accessToken });
   } catch (err) {
     logger.error("Error signup", err);
     if (err instanceof Errors) res.status(err.code).json(err);
