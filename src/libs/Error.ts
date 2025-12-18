@@ -36,6 +36,7 @@ export enum Message {
   RESET_PASSWORD = "Password has been successfully",
   ALREADY_EXISTS = "This email or username is already in use.",
   ADMIN_ACCESS = "Admin access only",
+  UPDATE_FAILED = "Update is failed!",
 
   // Writing Task
   TASK_NOT_FOUND = "Writing task not found.",

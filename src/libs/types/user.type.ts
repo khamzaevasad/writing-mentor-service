@@ -8,6 +8,8 @@ export interface User {
   userName: string;
   userEmail: string;
   userPassword?: string;
+  userImage?: string | null;
+  userDesc?: string | null;
   verifyOtp: string;
   verifyOtpExpireAt: number;
   isAccountVerified: boolean;
@@ -24,6 +26,13 @@ export interface UserInput {
   userPassword: string;
 }
 
+export interface userUpdateInput {
+  _id: Types.ObjectId;
+  userName?: string;
+  userImage?: string;
+  userDesc?: string;
+}
+
 export interface LoginInput {
   userEmail: string;
   userPassword: string;
@@ -31,4 +40,5 @@ export interface LoginInput {
 
 export interface ExtendedRequest extends Request {
   user: User;
+  file: Express.Multer.File;
 }

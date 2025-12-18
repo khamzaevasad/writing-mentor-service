@@ -1,5 +1,10 @@
 import logger from "../libs/utils/logger";
-import { LoginInput, User, UserInput } from "../libs/types/user.type";
+import {
+  LoginInput,
+  User,
+  UserInput,
+  userUpdateInput,
+} from "../libs/types/user.type";
 import UsersModel from "../schema/Users.model";
 import * as bcrypt from "bcrypt";
 import Errors, { HttpCode, Message } from "../libs/Error";
@@ -209,6 +214,18 @@ class UserService {
     }
   }
 
+  // updateUsers
+  public async updateUser(user: User, input: userUpdateInput): Promise<User> {
+    const userId = shapeIntoMongooseObjectId(user._id);
+
+    const result = await this.userModel
+      .findOneAndUpdate({ _id: userId }, input, { new: true })
+      .exec();
+
+    if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATE_FAILED);
+    return result;
+  }
+
   /** For Admin **/
 
   public async getAllUsers(): Promise<User[]> {
@@ -216,6 +233,7 @@ class UserService {
       const result = await this.userModel
         .find({ userType: UserType.USER })
         .exec();
+
       if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 
       return result;

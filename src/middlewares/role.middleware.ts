@@ -1,7 +1,7 @@
 import { NextFunction, Response, Request } from "express";
 import Errors, { HttpCode, Message } from "../libs/Error";
 import { UserType } from "../libs/enums/user.enum";
-import { ExtendedRequest } from "src/libs/types/user.type";
+import { ExtendedRequest } from "../libs/types/user.type";
 
 export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
   const extendedReq = req as ExtendedRequest;

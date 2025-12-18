@@ -31,6 +31,12 @@ const UserSchema = new Schema(
       select: false,
       required: true,
     },
+    userImage: {
+      type: String,
+    },
+    userDesc: {
+      type: String,
+    },
     verifyOtp: {
       type: String,
       default: "",

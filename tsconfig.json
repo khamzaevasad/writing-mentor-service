@@ -7,10 +7,11 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-
     "baseUrl": "./",
-    "typeRoots": ["./node_modules/@types", "./src/libs/types"]
+    "paths": {
+      "*": ["node_modules/*"]
+    }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
 }
