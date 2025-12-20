@@ -16,6 +16,7 @@ Requirements:
 - Use informal-polite speech style (합니다/해요 체)
 - Topic should be personal/emotional (farewells, gratitude, apologies, invitations)
 - The context should make the correct answer logically clear
+- Do NOT use \\n or newline characters
 - Do NOT include answer options
 - Do NOT include explanations
 - Output only the question number (51.) and passage with blanks.
@@ -42,6 +43,7 @@ Requirements:
 - The blanks should require noun phrases or complete clauses that fit logically
 - Include cause-and-effect or explanatory structure
 - The context should clearly indicate what type of content fits each blank
+- Do NOT use \\n or newline characters
 - Do NOT include answer options
 - Do NOT include explanations
 - Output only the question number (52.) and passage with blanks.
@@ -57,6 +59,8 @@ Create a complete question 53 with:
 - Writing instruction: 다음을 참고하여 '~ 변화' 또는 '~ 현황'에 대한 내용을 200~300자로 쓰십시오. 단, 글의 제목은 쓰지 마십시오.
 Requirements:
 - Output in strict JSON format (no extra text):
+- Do NOT use \\n or newline characters
+
 {
   "questionNumber": "53.",
   "prompt": "Full Korean question text including chart description and instruction",
@@ -74,15 +78,26 @@ Requirements:
 
 Your task is to GENERATE a TOPIK II Question 54 writing task, not to write a model answer and not to solve it.
 
-Requirements:
-- Present a clear topic related to society, culture, education, technology, or daily life.
-- Provide specific conditions or guiding points that the examinee must address.
-- The question must require a response of approximately 600–700 Korean characters.
-- The difficulty level must match real TOPIK II Question 54.
-- Do NOT include a sample answer.
-- Do NOT include explanations or tips.
-- Output only the question text.
+Example:
+사람은 누구나 청소년기를 거쳐 어른이 된다. 아동에서 어른으로 넘어가는 이 시기에 많은 청소년들은 혼란과 방황을 겪으며 성장한다. 아래의 내용을 중심으로 '청소년기의 중요성'에 대한 자신의 생각을 쓰라.
 
-The result should look exactly like an actual TOPIK II Question 54.
+- 청소년기가 중요한 이유는 무엇인가?
+- 청소년들은 이 시기에 주로 어떤 특징을 보이는가?
+- 청소년의 올바른 성장을 돕기 위해 어떤 노력이 필요한가?
+
+Requirements:
+- Present a clear topic related to society, culture, education, technology, environment, or daily life
+- Provide a brief context or background (2-3 sentences introducing the topic)
+- Include 3-4 bullet points with guiding questions that examinees must address
+- The question must require a response of approximately 600–700 Korean characters
+- Use formal written Korean style (다/이다 ending)
+- The difficulty level must match real TOPIK II Question 54
+- Write the passage as ONE continuous paragraph for the introduction, then bullet points
+- Do NOT use \\n or excessive line breaks
+- Do NOT include a sample answer
+- Do NOT include explanations or tips
+- Output format: "54. [introduction paragraph] [bullet points with guiding questions]"
+
+CRITICAL: The question should encourage critical thinking and require examinees to present their opinion with supporting reasons.
 `.trim(),
 };

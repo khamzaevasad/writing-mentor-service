@@ -3,18 +3,18 @@ import { Response } from "express";
 import { T } from "../libs/types/common.types";
 import logger from "../libs/utils/logger";
 import Errors, { HttpCode } from "../libs/Error";
-import AIservice from "../service/AI.service";
 import { Questions } from "../libs/enums/writingTask.enum";
+import AItaskService from "../service/AI.task.service";
 
 const taskController: T = {};
-const aiService = new AIservice();
+const aiService = new AItaskService();
 taskController.generateWritingTask = async (
   req: ExtendedRequest,
   res: Response
 ) => {
   try {
     logger.info("generateWritingTask");
-    const result = await aiService.generateWritingTask(Questions.FIFTY_TWO);
+    const result = await aiService.generateWritingTask(Questions.FIFTY_FOUR);
     res.status(HttpCode.OK).json({ question: result });
   } catch (err) {
     logger.error("generateWritingTask", err);

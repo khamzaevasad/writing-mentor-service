@@ -3,7 +3,7 @@ import { TASK_PROMPTS } from "../libs/config/prompts/prompts.config";
 import Errors, { HttpCode, Message } from "../libs/Error";
 import { Questions } from "../libs/enums/writingTask.enum";
 
-class AIservice {
+class AItaskService {
   private readonly openai: OpenAI;
 
   constructor() {
@@ -16,6 +16,7 @@ class AIservice {
     });
   }
 
+  // generateWritingTask
   public async generateWritingTask(
     questionType: Questions
   ): Promise<String | {}> {
@@ -50,10 +51,10 @@ class AIservice {
 
       return content || Message.TASK_GENERATION_FAILED;
     } catch (err) {
-      console.error("Error: model: AIservice", err);
+      console.error("Error: model: AItaskService", err);
       throw new Errors(HttpCode.NOT_MODIFIED, Message.TASK_GENERATION_FAILED);
     }
   }
 }
 
-export default AIservice;
+export default AItaskService;
