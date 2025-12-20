@@ -9,4 +9,19 @@ export interface ChartWritingTask {
   chartData: object | null;
 }
 
-export type AIGeneratedTask = SimpleWritingTask | ChartWritingTask;
+// export type AIGeneratedTask = SimpleWritingTask | ChartWritingTask;
+
+export type AIGeneratedTask =
+  | {
+      type: "CHART";
+      prompt: string;
+      chartData: {
+        type: "bar" | "line" | "pie";
+        title: string;
+        data: Record<string, any>;
+      };
+    }
+  | {
+      type: "SIMPLE";
+      prompt: string;
+    };

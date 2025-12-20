@@ -3,6 +3,7 @@ import { TASK_PROMPTS } from "../libs/config/prompts/prompts.config";
 import Errors, { HttpCode, Message } from "../libs/Error";
 import { Questions } from "../libs/enums/writingTask.enum";
 import { AIGeneratedTask } from "../libs/types/ai.types";
+import logger from "../libs/utils/logger";
 
 class AItaskService {
   private readonly openai: OpenAI;
@@ -38,6 +39,10 @@ class AItaskService {
         ],
         temperature: 0.8,
         max_tokens: questionType === Questions.FIFTY_THREE ? 800 : 600,
+
+        ...(questionType === Questions.FIFTY_THREE && {
+          response_format: { type: "json_object" },
+        }),
       });
 
       const content = completion.choices[0].message.content?.trim();
@@ -48,17 +53,23 @@ class AItaskService {
       if (questionType === Questions.FIFTY_THREE) {
         try {
           const parsed = JSON.parse(content);
+
+          if (!parsed.chartData) {
+            throw new Error("chartData not found in response");
+          }
           return {
             type: "CHART",
             prompt: parsed.prompt,
-            chartData: parsed.chartData ?? null,
+            chartData: parsed.chartData,
           };
-        } catch {
-          return {
-            type: "CHART",
-            prompt: content,
-            chartData: null,
-          };
+        } catch (parseError) {
+          logger.error("JSON parse error:", parseError);
+          logger.error("Received content:", content);
+
+          throw new Errors(
+            HttpCode.INTERNAL_SERVER_ERROR,
+            Message.PARSE_FAILED
+          );
         }
       }
 
@@ -67,7 +78,7 @@ class AItaskService {
         prompt: content,
       };
     } catch (err) {
-      console.error("Error: model: AItaskService", err);
+      logger.error("Error: model: AItaskService", err);
       throw new Errors(HttpCode.NOT_MODIFIED, Message.TASK_GENERATION_FAILED);
     }
   }

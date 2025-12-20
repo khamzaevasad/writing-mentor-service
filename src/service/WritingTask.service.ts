@@ -1,4 +1,8 @@
-import { CreateWritingTaskInput } from "../libs/types/writingTask.type";
+import Errors, { HttpCode, Message } from "../libs/Error";
+import {
+  CreateWritingTaskInput,
+  IWritingTask,
+} from "../libs/types/writingTask.type";
 import WritingTaskModel from "../schema/WritingTask.model";
 
 class WritingTaskService {
@@ -7,15 +11,14 @@ class WritingTaskService {
     this.writingTaskModel = WritingTaskModel;
   }
 
-  public async createTask(input: CreateWritingTaskInput) {
+  public async createTask(
+    input: CreateWritingTaskInput
+  ): Promise<IWritingTask> {
     try {
-      const task = await this.writingTaskModel.create({
-        question: input.question,
-        prompt: input.prompt,
-        chartData: input.chartData,
-        timeLimit: input.timeLimit,
-      });
+      const task = await this.writingTaskModel.create(input);
 
+      if (!task)
+        throw new Errors(HttpCode.NOT_MODIFIED, Message.TASK_CREATION_FAILED);
       return task;
     } catch (err) {
       console.log("Error model: createTask");

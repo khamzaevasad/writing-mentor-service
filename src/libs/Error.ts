@@ -56,6 +56,7 @@ export enum Message {
   KEY_NOT_FOUND = "OPENAI_API_KEY not found in .env file",
   TASK_GENERATION_FAILED = "Error occurred while generating question",
   OPEN_AI_ERR = "OpenAI API error",
+  PARSE_FAILED = "Failed to parse AI response",
 
   // Rate / Limits
   TOO_MANY_REQUESTS = "Too many requests. Please try again later.",

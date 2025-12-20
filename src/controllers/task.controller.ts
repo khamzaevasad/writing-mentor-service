@@ -2,7 +2,7 @@ import { ExtendedRequest } from "../libs/types/user.type";
 import { Response } from "express";
 import { T } from "../libs/types/common.types";
 import logger from "../libs/utils/logger";
-import Errors, { HttpCode } from "../libs/Error";
+import Errors, { HttpCode, Message } from "../libs/Error";
 import { Questions, WritingQuestions } from "../libs/enums/writingTask.enum";
 import AItaskService from "../service/AI.task.service";
 import WritingTaskService from "../service/WritingTask.service";
@@ -19,31 +19,49 @@ taskController.generateWritingTask = async (
   try {
     logger.info("generateWritingTask");
 
-    const question = req.params.question as string;
-    console.log("question", question);
-    const questionType = Number(question);
-    const result = await aiService.generateWritingTask(questionType);
+    const questionParam = req.params.question as string;
+    console.log("questionParam", questionParam);
 
-    let prompt: string;
-    let chartData: object | null = null;
+    const questionNumber = Number(questionParam);
+    if (![51, 52, 53, 54].includes(questionNumber)) {
+      throw new Errors(HttpCode.BAD_REQUEST, Message.UNSUPPORTED_QUESTION_TYPE);
+    }
+    let questionType: Questions;
 
-    if (result.type === "CHART") {
-      prompt = result.prompt;
-      chartData = result.chartData;
-    } else {
-      prompt = result.prompt;
+    switch (questionParam) {
+      case "51":
+        questionType = Questions.FIFTY_ONE;
+        break;
+      case "52":
+        questionType = Questions.FIFTY_TWO;
+        break;
+      case "53":
+        questionType = Questions.FIFTY_THREE;
+        break;
+      case "54":
+        questionType = Questions.FIFTY_FOUR;
+        break;
+      default:
+        throw new Errors(
+          HttpCode.BAD_REQUEST,
+          Message.UNSUPPORTED_QUESTION_TYPE
+        );
     }
 
+    const result = await aiService.generateWritingTask(questionType);
+
     const input = {
-      question: questionType,
-      prompt: prompt,
-      chartData: chartData,
+      question: Number(questionParam),
+      prompt: result.prompt,
+      chartData: result.type === "CHART" ? result.chartData : null,
       timeLimit: questionType === Questions.FIFTY_FOUR.valueOf() ? 70 : 30,
     };
 
+    logger.info("Saving to DB:", JSON.stringify(input, null, 2));
+
     const savedTask = await writingTaskService.createTask(input);
 
-    res.status(HttpCode.OK).json(savedTask);
+    res.status(HttpCode.CREATED).json(savedTask);
   } catch (err) {
     logger.error("generateWritingTask", err);
     if (err instanceof Errors) res.status(err.code).json(err);

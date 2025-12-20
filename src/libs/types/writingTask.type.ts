@@ -1,4 +1,4 @@
-import { ObjectId } from "mongoose";
+import { ObjectId, Document } from "mongoose";
 import { Questions } from "./../enums/writingTask.enum";
 
 export interface WritingQuestion {
@@ -23,9 +23,30 @@ export interface WritingTask {
   updatedAt: Date;
 }
 
+export interface IChartData {
+  type: "bar" | "line" | "pie";
+  title: string;
+  data: Record<string, any>;
+}
+
+export interface IWritingTask extends Document {
+  question: 51 | 52 | 53 | 54;
+  prompt: string;
+  chartData?: IChartData | null;
+  timeLimit: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface CreateWritingTaskInput {
   question: Questions;
   prompt: string;
-  chartData?: object | null;
+  chartData?: IChartData | null;
   timeLimit: number;
+}
+
+export interface UpdateWritingTaskInput {
+  prompt?: string;
+  chartData?: IChartData | null;
+  timeLimit?: number;
 }
