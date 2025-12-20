@@ -3,7 +3,7 @@ import { Response } from "express";
 import { T } from "../libs/types/common.types";
 import logger from "../libs/utils/logger";
 import Errors, { HttpCode } from "../libs/Error";
-import AIservice from "../service/Ai.service";
+import AIservice from "../service/AI.service";
 
 const evaluationController: T = {};
 const aiService = new AIservice();
