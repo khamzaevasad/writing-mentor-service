@@ -82,6 +82,8 @@ class AItaskService {
       throw new Errors(HttpCode.NOT_MODIFIED, Message.TASK_GENERATION_FAILED);
     }
   }
+
+  //
 }
 
 export default AItaskService;

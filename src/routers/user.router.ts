@@ -4,6 +4,7 @@ import userController from "../controllers/Users.controller";
 import makeUpLoader from "../libs/utils/uploader";
 import taskController from "../controllers/task.controller";
 import submissionController from "../controllers/submission.controller";
+import evaluationController from "../controllers/evaluation.controller";
 
 const userRouter = express.Router();
 
@@ -47,6 +48,11 @@ userRouter.post(
   "/evaluation/submit-answer",
   authController.verifyAuth,
   submissionController.submitAnswer
+);
+userRouter.post(
+  "/check-result",
+  authController.verifyAuth,
+  evaluationController.evaluateSubmission
 );
 
 export default userRouter;
