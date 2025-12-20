@@ -1,12 +1,14 @@
 import OpenAI from "openai";
-import { TASK_PROMPTS } from "../libs/config/prompts.config";
+import { TASK_PROMPTS } from "../libs/config/prompts/prompts.config";
+import Errors, { HttpCode, Message } from "../libs/Error";
+import { Questions } from "../libs/enums/writingTask.enum";
 
 class AIservice {
   private readonly openai: OpenAI;
 
   constructor() {
     if (!process.env.OPENAI_API_KEY) {
-      throw new Error("OPENAI_API_KEY topilmadi .env faylda");
+      throw new Errors(HttpCode.NOT_FOUND, Message.KEY_NOT_FOUND);
     }
 
     this.openai = new OpenAI({
@@ -14,42 +16,42 @@ class AIservice {
     });
   }
 
-  public async generateWritingTask(questionType: string): Promise<any> {
-    // return any yoki interface yarating
+  public async generateWritingTask(
+    questionType: Questions
+  ): Promise<String | {}> {
     const prompt = TASK_PROMPTS[questionType];
 
     if (!prompt) {
-      throw new Error(`Noto'g'ri questionType: ${questionType}`);
+      throw new Errors(HttpCode.BAD_REQUEST, Message.UNSUPPORTED_QUESTION_TYPE);
     }
 
     try {
       const completion = await this.openai.chat.completions.create({
-        model: "gpt-4o", // yoki gpt-4o-mini arzonroq uchun
+        model: "gpt-4o",
         messages: [
           {
             role: "user",
             content: prompt,
           },
         ],
-        temperature: 0.8, // kreativlik uchun
-        max_tokens: questionType === "53" ? 800 : 600,
+        temperature: 0.8,
+        max_tokens: questionType === Questions.FIFTY_THREE ? 800 : 600,
       });
 
       const content = completion.choices[0].message.content?.trim();
 
-      if (questionType === "53") {
-        // JSON qaytarishini parse qilamiz
+      if (questionType === Questions.FIFTY_THREE) {
         try {
           return JSON.parse(content || "{}");
         } catch {
-          return { prompt: content, chartData: null }; // agar parse bo'lmasa
+          return { prompt: content, chartData: null };
         }
       }
 
-      return content || "Savol generatsiya qilishda xato yuz berdi.";
-    } catch (error: any) {
-      console.error("[AI Service] Xato:", error.message);
-      throw new Error(`OpenAI xatosi: ${error.message}`);
+      return content || Message.TASK_GENERATION_FAILED;
+    } catch (err) {
+      console.error("Error: model: AIservice", err);
+      throw new Errors(HttpCode.NOT_MODIFIED, Message.TASK_GENERATION_FAILED);
     }
   }
 }

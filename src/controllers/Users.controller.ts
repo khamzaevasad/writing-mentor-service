@@ -8,6 +8,7 @@ import UserService from "../service/Users.Service";
 const userController: T = {};
 const userService = new UserService();
 
+// updateUser
 userController.updateUser = async (req: ExtendedRequest, res: Response) => {
   try {
     logger.info("updateUser");

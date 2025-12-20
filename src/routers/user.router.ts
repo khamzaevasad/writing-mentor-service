@@ -2,7 +2,7 @@ import express from "express";
 import authController from "../controllers/auth.controller";
 import userController from "../controllers/Users.controller";
 import makeUpLoader from "../libs/utils/uploader";
-import evaluationController from "../controllers/evaluation.controller";
+import taskController from "../controllers/task.controller";
 
 const userRouter = express.Router();
 
@@ -40,7 +40,7 @@ userRouter.post(
 userRouter.post(
   "/generate-task",
   authController.verifyAuth,
-  evaluationController.generateWritingTask
+  taskController.generateWritingTask
 );
 
 export default userRouter;

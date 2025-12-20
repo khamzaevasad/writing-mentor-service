@@ -1,5 +1,5 @@
-export const TASK_PROMPTS: Record<string, string> = {
-  "51": `
+export const TASK_PROMPTS: Record<number, string> = {
+  51: `
 You are a professional TOPIK II test question writer.
 Your task is to GENERATE a TOPIK II-style question, not to solve it and not to provide an answer.
 Create one TOPIK II question similar to question 51.
@@ -28,7 +28,7 @@ Speech Style Rule:
 ✗ Wrong: -이에요, -예요, -아요, -어요, -해요
   `.trim(),
 
-  "52": `
+  52: `
 You are a professional TOPIK II test question writer.
 Your task is to GENERATE a TOPIK II-style question, not to solve it and not to provide an answer.
 Create one TOPIK II question similar to question 52.
@@ -47,7 +47,7 @@ Requirements:
 - Output only the question number (52.) and passage with blanks.
   `.trim(),
 
-  "53": `
+  53: `
 You are a professional TOPIK II test question writer.
 Your task is to GENERATE a TOPIK II-style question 53, including a fictional chart/graph description.
 Create a complete question 53 with:
@@ -70,7 +70,7 @@ Requirements:
 - Chart data must be realistic and varied
 `.trim(),
 
-  "54": `You are a professional TOPIK II writing exam question designer.
+  54: `You are a professional TOPIK II writing exam question designer.
 
 Your task is to GENERATE a TOPIK II Question 54 writing task, not to write a model answer and not to solve it.
 
