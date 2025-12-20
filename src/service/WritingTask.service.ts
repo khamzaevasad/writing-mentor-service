@@ -16,7 +16,6 @@ class WritingTaskService {
         timeLimit: input.timeLimit,
       });
 
-      console.log("task", task);
       return task;
     } catch (err) {
       console.log("Error model: createTask");

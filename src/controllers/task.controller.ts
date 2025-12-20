@@ -18,8 +18,11 @@ taskController.generateWritingTask = async (
 ) => {
   try {
     logger.info("generateWritingTask");
-    const questionType = Questions.FIFTY_THREE;
-    const result = await aiService.generateWritingTask(Questions.FIFTY_TWO);
+
+    const question = req.params.question as string;
+    console.log("question", question);
+    const questionType = Number(question);
+    const result = await aiService.generateWritingTask(questionType);
 
     let prompt: string;
     let chartData: object | null = null;
@@ -40,12 +43,7 @@ taskController.generateWritingTask = async (
 
     const savedTask = await writingTaskService.createTask(input);
 
-    res.status(HttpCode.OK).json({
-      taskId: savedTask._id,
-      question: savedTask.prompt,
-      chartData: savedTask.chartData,
-      timeLimit: savedTask.timeLimit,
-    });
+    res.status(HttpCode.OK).json(savedTask);
   } catch (err) {
     logger.error("generateWritingTask", err);
     if (err instanceof Errors) res.status(err.code).json(err);
