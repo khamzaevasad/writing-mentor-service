@@ -11,7 +11,7 @@ import * as bcrypt from "bcrypt";
 import Errors, { HttpCode, Message } from "../libs/Error";
 import { UserStatus, UserType } from "../libs/enums/user.enum";
 import { shapeIntoMongooseObjectId } from "../libs/config/config";
-import { PreMiddlewareFunction, Types } from "mongoose";
+import { Types } from "mongoose";
 
 class UserService {
   private readonly userModel;
@@ -272,6 +272,7 @@ class UserService {
 
   /** For Admin **/
 
+  // getAllUsers
   public async getAllUsers(): Promise<User[]> {
     try {
       const result = await this.userModel
@@ -286,6 +287,7 @@ class UserService {
     }
   }
 
+  // overview
   public async overview(): Promise<UserStats> {
     try {
       const totalUsers = await this.userModel

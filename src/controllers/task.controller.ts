@@ -3,19 +3,49 @@ import { Response } from "express";
 import { T } from "../libs/types/common.types";
 import logger from "../libs/utils/logger";
 import Errors, { HttpCode } from "../libs/Error";
-import { Questions } from "../libs/enums/writingTask.enum";
+import { Questions, WritingQuestions } from "../libs/enums/writingTask.enum";
 import AItaskService from "../service/AI.task.service";
+import WritingTaskService from "../service/WritingTask.service";
 
 const taskController: T = {};
 const aiService = new AItaskService();
+const writingTaskService = new WritingTaskService();
+
+// generateWritingTask
 taskController.generateWritingTask = async (
   req: ExtendedRequest,
   res: Response
 ) => {
   try {
     logger.info("generateWritingTask");
-    const result = await aiService.generateWritingTask(Questions.FIFTY_FOUR);
-    res.status(HttpCode.OK).json({ question: result });
+    const questionType = Questions.FIFTY_THREE;
+    const result = await aiService.generateWritingTask(Questions.FIFTY_TWO);
+
+    let prompt: string;
+    let chartData: object | null = null;
+
+    if (result.type === "CHART") {
+      prompt = result.prompt;
+      chartData = result.chartData;
+    } else {
+      prompt = result.prompt;
+    }
+
+    const input = {
+      question: questionType,
+      prompt: prompt,
+      chartData: chartData,
+      timeLimit: questionType === Questions.FIFTY_FOUR.valueOf() ? 70 : 30,
+    };
+
+    const savedTask = await writingTaskService.createTask(input);
+
+    res.status(HttpCode.OK).json({
+      taskId: savedTask._id,
+      question: savedTask.prompt,
+      chartData: savedTask.chartData,
+      timeLimit: savedTask.timeLimit,
+    });
   } catch (err) {
     logger.error("generateWritingTask", err);
     if (err instanceof Errors) res.status(err.code).json(err);

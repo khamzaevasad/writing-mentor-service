@@ -22,3 +22,10 @@ export interface WritingTask {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface CreateWritingTaskInput {
+  question: Questions;
+  prompt: string;
+  chartData?: object | null;
+  timeLimit: number;
+}

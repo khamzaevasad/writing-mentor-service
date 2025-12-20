@@ -38,9 +38,10 @@ userRouter.post(
 
 // openAI
 userRouter.post(
-  "/generate-task",
+  "/evaluation/generate-task",
   authController.verifyAuth,
   taskController.generateWritingTask
 );
+userRouter.post("/evaluation/submit-answer", authController.verifyAuth);
 
 export default userRouter;
