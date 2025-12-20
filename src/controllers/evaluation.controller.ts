@@ -13,8 +13,7 @@ evaluationController.generateWritingTask = async (
 ) => {
   try {
     logger.info("generateWritingTask");
-    const task: string = req.body;
-    const result = await aiService.generateWritingTask(task);
+    const result = await aiService.generateWritingTask("54");
     res.status(HttpCode.OK).json(result);
   } catch (err) {
     logger.error("generateWritingTask", err);

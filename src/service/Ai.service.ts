@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { TASK_PROMPTS } from "../libs/config/prompts.config";
 
 class AIservice {
   private readonly openai: OpenAI;
@@ -13,29 +14,39 @@ class AIservice {
     });
   }
 
-  public async generateWritingTask(questionType: string): Promise<string> {
+  public async generateWritingTask(questionType: string): Promise<any> {
+    // return any yoki interface yarating
+    const prompt = TASK_PROMPTS[questionType];
+
+    if (!prompt) {
+      throw new Error(`Noto'g'ri questionType: ${questionType}`);
+    }
+
     try {
       const completion = await this.openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "gpt-4o", // yoki gpt-4o-mini arzonroq uchun
         messages: [
           {
-            role: "system",
-            content:
-              "Sen TOPIK imtihoniga tayyorlaydigan tajribali koreys tili o'qituvchisisan. Javobni faqat koreys tilida ber va hech qanday qo'shimcha izoh yozma.",
-          },
-          {
             role: "user",
-            content: `TOPIK ${questionType} turidagi 쓰기 savoliga o'xshash, lekin mutlaqo noyob va hech qayerda uchramagan savol yarating. Diagrammasiz bo'lsin. Faqat savol matnini koreys tilida yozing, boshqa hech narsa qo'shmang.`,
+            content: prompt,
           },
         ],
-        temperature: 0.9,
-        max_tokens: 600,
+        temperature: 0.8, // kreativlik uchun
+        max_tokens: questionType === "53" ? 800 : 600,
       });
 
-      return (
-        completion.choices[0].message.content?.trim() ||
-        "Savol generatsiya qilishda xato yuz berdi."
-      );
+      const content = completion.choices[0].message.content?.trim();
+
+      if (questionType === "53") {
+        // JSON qaytarishini parse qilamiz
+        try {
+          return JSON.parse(content || "{}");
+        } catch {
+          return { prompt: content, chartData: null }; // agar parse bo'lmasa
+        }
+      }
+
+      return content || "Savol generatsiya qilishda xato yuz berdi.";
     } catch (error: any) {
       console.error("[AI Service] Xato:", error.message);
       throw new Error(`OpenAI xatosi: ${error.message}`);
