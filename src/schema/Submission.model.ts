@@ -8,12 +8,12 @@ const SubmissionSchema = new Schema(
       required: true,
     },
     taskId: {
-      types: Types.ObjectId,
+      type: Types.ObjectId,
       ref: "WritingTask",
       required: true,
     },
     content: {
-      type: String,
+      type: Schema.Types.Mixed,
       required: true,
     },
   },

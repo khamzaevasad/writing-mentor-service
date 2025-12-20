@@ -3,7 +3,7 @@ import { Response } from "express";
 import { T } from "../libs/types/common.types";
 import logger from "../libs/utils/logger";
 import Errors, { HttpCode, Message } from "../libs/Error";
-import { Questions, WritingQuestions } from "../libs/enums/writingTask.enum";
+import { Questions } from "../libs/enums/writingTask.enum";
 import AItaskService from "../service/AI.task.service";
 import WritingTaskService from "../service/WritingTask.service";
 
@@ -57,7 +57,7 @@ taskController.generateWritingTask = async (
       timeLimit: questionType === Questions.FIFTY_FOUR.valueOf() ? 70 : 30,
     };
 
-    logger.info("Saving to DB:", JSON.stringify(input, null, 2));
+    logger.info("Saving task to DB:");
 
     const savedTask = await writingTaskService.createTask(input);
 
