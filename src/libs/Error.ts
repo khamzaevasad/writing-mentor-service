@@ -41,6 +41,7 @@ export enum Message {
   // Writing Task
   TASK_NOT_FOUND = "Writing task not found.",
   TASK_CREATION_FAILED = "Failed to create writing task.",
+  CREATION_FAILED = "Creation Failed.",
   TASK_TIME_EXPIRED = "Time limit for this writing task has expired.",
 
   // Submission
@@ -57,6 +58,8 @@ export enum Message {
   TASK_GENERATION_FAILED = "Error occurred while generating question",
   OPEN_AI_ERR = "OpenAI API error",
   PARSE_FAILED = "Failed to parse AI response",
+  CHART_NOT_FOUND = "Chart data not found for question 53",
+  PROMPT_NOT_FOUND = "Evaluation prompt not found",
 
   // Rate / Limits
   TOO_MANY_REQUESTS = "Too many requests. Please try again later.",

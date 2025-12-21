@@ -14,24 +14,34 @@ const EvaluationSchema = new Schema(
       required: true,
     },
 
+    blank1Score: {
+      type: Number,
+      required: false,
+    },
+
+    blank2Score: {
+      type: Number,
+      required: false,
+    },
+
     taskUnderstanding: {
       type: Number,
-      required: true,
+      required: false,
     },
 
     content: {
       type: Number,
-      required: true,
+      required: false,
     },
 
     grammar: {
       type: Number,
-      required: true,
+      required: false,
     },
 
     vocabulary: {
       type: Number,
-      required: true,
+      required: false,
     },
 
     feedback: {

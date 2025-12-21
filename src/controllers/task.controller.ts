@@ -4,7 +4,7 @@ import { T } from "../libs/types/common.types";
 import logger from "../libs/utils/logger";
 import Errors, { HttpCode, Message } from "../libs/Error";
 import { Questions } from "../libs/enums/writingTask.enum";
-import AItaskService from "../service/AI.task.service";
+import AItaskService from "../service/AI.service";
 import WritingTaskService from "../service/WritingTask.service";
 
 const taskController: T = {};
