@@ -38,10 +38,6 @@ const WritingTaskSchema = new Schema<IWritingTask>(
       default: null,
       required: false,
     },
-    timeLimit: {
-      type: Number,
-      required: true,
-    },
   },
   { timestamps: true, collection: "writingTask" }
 );
