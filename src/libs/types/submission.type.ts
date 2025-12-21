@@ -19,6 +19,7 @@ export interface BlankAnswerInput {
 export interface SubmitBlankAnswerRequest {
   userId?: Types.ObjectId | string;
   taskId: Types.ObjectId | string;
+  sessionId: Types.ObjectId | string;
   content: BlankAnswerInput | string;
 }
 

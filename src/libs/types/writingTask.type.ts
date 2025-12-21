@@ -42,7 +42,6 @@ export interface CreateWritingTaskInput {
   question: Questions;
   prompt: string;
   chartData?: IChartData | null;
-  timeLimit: number;
 }
 
 export interface UpdateWritingTaskInput {

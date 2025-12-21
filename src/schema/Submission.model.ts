@@ -12,6 +12,11 @@ const SubmissionSchema = new Schema(
       ref: "WritingTask",
       required: true,
     },
+    sessionId: {
+      type: Schema.Types.ObjectId,
+      ref: "ExamSession",
+      required: true,
+    },
     content: {
       type: Schema.Types.Mixed,
       required: true,
@@ -19,5 +24,7 @@ const SubmissionSchema = new Schema(
   },
   { timestamps: true }
 );
+
+SubmissionSchema.index({ taskId: 1, sessionId: 1 }, { unique: true });
 
 export default mongoose.model("Submission", SubmissionSchema);

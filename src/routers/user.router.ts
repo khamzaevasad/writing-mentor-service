@@ -5,6 +5,7 @@ import makeUpLoader from "../libs/utils/uploader";
 import taskController from "../controllers/task.controller";
 import submissionController from "../controllers/submission.controller";
 import evaluationController from "../controllers/evaluation.controller";
+import examSessionController from "../controllers/examSession.controller";
 
 const userRouter = express.Router();
 
@@ -39,11 +40,12 @@ userRouter.post(
 );
 
 // openAI
-userRouter.get(
-  "/evaluation/generate/:question",
-  authController.verifyAuth,
-  taskController.generateWritingTask
-);
+// userRouter.get(
+//   "/evaluation/generate/:question",
+//   authController.verifyAuth,
+//   taskController.generateWritingTask
+// );
+
 userRouter.post(
   "/evaluation/submit-answer",
   authController.verifyAuth,
@@ -55,4 +57,21 @@ userRouter.post(
   evaluationController.evaluateSubmission
 );
 
+userRouter.post(
+  "/start",
+  authController.verifyAuth,
+  examSessionController.startExamSession
+);
+
+userRouter.get(
+  "/:sessionId/time",
+  authController.verifyAuth,
+  examSessionController.getRemainingTime
+);
+
+userRouter.post(
+  "/complete",
+  authController.verifyAuth,
+  examSessionController.completeSession
+);
 export default userRouter;

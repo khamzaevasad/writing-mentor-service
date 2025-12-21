@@ -43,6 +43,8 @@ export enum Message {
   TASK_CREATION_FAILED = "Failed to create writing task.",
   CREATION_FAILED = "Creation Failed.",
   TASK_TIME_EXPIRED = "Time limit for this writing task has expired.",
+  ACTIVE_EXAM = "You already have an active exam session",
+  SESSION_IS_NOT_ACTIVE = "Session is not active",
 
   // Submission
   SUBMISSION_FAILED = "Failed to submit writing task.",
