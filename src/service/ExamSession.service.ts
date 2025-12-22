@@ -147,6 +147,7 @@ class ExamSessionService {
     }
   }
 
+  // getSession
   public async getSession(sessionId: string | Types.ObjectId) {
     try {
       const session = await this.examSessionModel.findById(sessionId);
@@ -158,6 +159,108 @@ class ExamSessionService {
       return session;
     } catch (err) {
       console.error("Error getting session:", err);
+      throw err;
+    }
+  }
+
+  // getActiveSessionByUser
+  public async getActiveSessionByUser(userId: string | Types.ObjectId) {
+    try {
+      const session = await this.examSessionModel
+        .findOne({
+          userId: new Types.ObjectId(userId),
+          status: "active",
+        })
+        .exec();
+
+      if (!session) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+      return session;
+    } catch (err) {
+      console.log("Error model: getActiveSessionByUser", err);
+      throw err;
+    }
+  }
+
+  // checkSessionStatus
+  public async checkSessionStatus(sessionId: string | Types.ObjectId) {
+    try {
+      const session = await this.getSession(sessionId);
+
+      if (session.status === "active") {
+        const now = Date.now();
+        const elapsed = now - session.startTime.getTime();
+
+        if (elapsed > session.timeLimit) {
+          session.status = "expired";
+          session.endTime = new Date();
+          await session.save();
+
+          return {
+            status: "expired",
+            message: "Session time has expired",
+          };
+        }
+      }
+
+      return {
+        status: session.status,
+        message:
+          session.status === "active"
+            ? "Session is active"
+            : "Session is not active",
+      };
+    } catch (err) {
+      console.log("Error model: checkSessionStatus", err);
+      throw err;
+    }
+  }
+
+  // validateSessionForSubmission
+  public async validateSessionForSubmission(
+    sessionId: string | Types.ObjectId
+  ) {
+    try {
+      const session = await this.getSession(sessionId);
+
+      if (session.status !== "active") {
+        throw new Error(`Session is ${session.status}. Cannot submit answers.`);
+      }
+
+      const now = Date.now();
+      const elapsed = now - session.startTime.getTime();
+      const remaining = session.timeLimit - elapsed;
+
+      if (remaining <= 0) {
+        session.status = "expired";
+        session.endTime = new Date();
+        await session.save();
+
+        throw new Errors(HttpCode.BAD_REQUEST, Message.TASK_TIME_EXPIRED);
+      }
+
+      return {
+        isValid: true,
+        remainingTime: remaining,
+        session,
+      };
+    } catch (err) {
+      console.error("Error model: validateSessionForSubmission", err);
+      throw err;
+    }
+  }
+
+  public async stopExam(id: string | Types.ObjectId) {
+    try {
+      const result = await this.examSessionModel.findOne({
+        _id: new Types.ObjectId(id),
+        status: "active",
+      });
+      if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+      result.status = "completed";
+      result.save();
+      return result;
+    } catch (err) {
+      logger.error("Error: stopExam", err);
       throw err;
     }
   }

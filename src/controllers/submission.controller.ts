@@ -37,13 +37,24 @@ submissionController.submitAnswer = async (
     if (remainingTime <= 0)
       throw new Errors(HttpCode.BAD_REQUEST, Message.TASK_TIME_EXPIRED);
 
+    const validation = await examSessionService.validateSessionForSubmission(
+      sessionId
+    );
+    console.log("Remaining time:", validation.remainingTime);
+
     const result = await submissionService.submitAnswer({
       userId: req.user._id,
       taskId,
       sessionId,
       content,
     });
-    res.status(HttpCode.OK).json(result);
+    res
+      .status(HttpCode.OK)
+      .json({
+        success: true,
+        message: "Answer submitted successfully",
+        data: result,
+      });
   } catch (err) {
     logger.error("submitAnswer", err);
     if (err instanceof Errors) res.status(err.code).json(err);

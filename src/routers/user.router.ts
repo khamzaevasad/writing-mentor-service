@@ -70,8 +70,14 @@ userRouter.get(
 );
 
 userRouter.post(
-  "/complete",
+  "/complete/:sessionId",
   authController.verifyAuth,
   examSessionController.completeSession
+);
+
+userRouter.post(
+  "/stop-exam",
+  authController.verifyAuth,
+  examSessionController.stopExam
 );
 export default userRouter;

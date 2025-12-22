@@ -60,4 +60,22 @@ examSessionController.completeSession = async (
     else res.status(Errors.standard.code).json(Errors.standard);
   }
 };
+
+examSessionController.stopExam = async (
+  req: ExtendedRequest,
+  res: Response
+) => {
+  try {
+    logger.info("stopExam");
+    const { _id } = req.body;
+
+    const result = await examSessionService.stopExam(_id);
+    res.status(HttpCode.OK).json(result);
+  } catch (err) {
+    logger.error("stopExam", err);
+    logger.error("completeSession", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
 export default examSessionController;
