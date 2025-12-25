@@ -92,7 +92,6 @@ class AIService {
   }
 
   // evaluateSubmission
-
   public async evaluateSubmission(
     input: EvaluationInput
   ): Promise<EvaluationOutput> {
@@ -160,6 +159,107 @@ class AIService {
       if (err instanceof Errors) throw err;
       throw new Errors(HttpCode.INTERNAL_SERVER_ERROR, Message.OPEN_AI_ERR);
     }
+  }
+  // generateOverallFeedback
+  public async generateOverallFeedback(
+    evaluations: Array<{
+      question: number;
+      score: number;
+      feedback: string;
+      missingConcepts: string[];
+    }>
+  ): Promise<string> {
+    try {
+      logger.info("🤖 Generating overall feedback from AI...");
+
+      // Prompt yaratish
+      const prompt = `
+You are a TOPIK II writing exam evaluator. Based on the individual question evaluations below, provide a comprehensive overall feedback in Korean.
+
+Evaluation Results:
+${JSON.stringify(evaluations, null, 2)}
+
+Requirements:
+- Write feedback in Korean (한국어)
+- Keep it concise (150-200 characters)
+- Highlight overall strengths
+- Identify main areas for improvement
+- Be constructive and encouraging
+- Mention specific concepts that need work
+
+Format:
+전반적으로 [overall assessment]. 강점은 [strengths]. 개선이 필요한 부분은 [areas to improve]. 특히 [specific concepts]을/를 더 연습하시기 바랍니다.
+      `.trim();
+
+      const completion = await this.openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a professional TOPIK II evaluator providing overall feedback.",
+          },
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        temperature: 0.4,
+        max_tokens: 500,
+      });
+
+      const result = completion.choices[0].message.content?.trim();
+
+      if (!result) {
+        throw new Error("Failed to generate overall feedback");
+      }
+
+      logger.info("✅ Overall feedback generated");
+      return result;
+    } catch (err) {
+      logger.error("Error generating overall feedback:", err);
+
+      // ✅ Fallback: AI fail bo'lsa, manual summary
+      return this.createFallbackFeedback(evaluations);
+    }
+  }
+
+  // createFallbackFeedback
+  private createFallbackFeedback(
+    evaluations: Array<{
+      question: number;
+      score: number;
+      feedback: string;
+      missingConcepts: string[];
+    }>
+  ): string {
+    const totalScore = evaluations.reduce((sum, e) => sum + e.score, 0);
+    const maxScore = 100; // 10 + 10 + 30 + 50
+    const percentage = Math.round((totalScore / maxScore) * 100);
+
+    // Kamchiliklar yig'ish
+    const allMissingConcepts = evaluations
+      .flatMap((e) => e.missingConcepts)
+      .filter((concept, index, self) => self.indexOf(concept) === index) // unique
+      .slice(0, 3); // faqat birinchi 3ta
+
+    let feedback = `전반적으로 ${percentage}%의 점수를 획득하셨습니다. `;
+
+    if (percentage >= 80) {
+      feedback += "우수한 성적입니다. ";
+    } else if (percentage >= 60) {
+      feedback += "양호한 수준입니다. ";
+    } else {
+      feedback += "더 많은 연습이 필요합니다. ";
+    }
+
+    if (allMissingConcepts.length > 0) {
+      feedback += `특히 ${allMissingConcepts.join(
+        ", "
+      )}을/를 더 학습하시기 바랍니다.`;
+    }
+
+    return feedback;
   }
 }
 

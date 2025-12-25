@@ -1,6 +1,38 @@
 import { Schema, model } from "mongoose";
 import { IExamSession } from "../libs/types/examSession.type";
 
+const SessionResultSchema = new Schema(
+  {
+    totalScore: { type: Number, required: true },
+    breakdown: {
+      question51: {
+        score: { type: Number, required: true },
+        maxScore: { type: Number, default: 10 },
+        percentage: { type: Number, required: true },
+      },
+      question52: {
+        score: { type: Number, required: true },
+        maxScore: { type: Number, default: 10 },
+        percentage: { type: Number, required: true },
+      },
+      question53: {
+        score: { type: Number, required: true },
+        maxScore: { type: Number, default: 30 },
+        percentage: { type: Number, required: true },
+      },
+      question54: {
+        score: { type: Number, required: true },
+        maxScore: { type: Number, default: 50 },
+        percentage: { type: Number, required: true },
+      },
+    },
+    evaluationIds: [{ type: Schema.Types.ObjectId, ref: "Evaluation" }],
+    overallFeedback: { type: String, required: true },
+    evaluatedAt: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
 const ExamSessionSchema = new Schema<IExamSession>(
   {
     userId: {
@@ -32,6 +64,10 @@ const ExamSessionSchema = new Schema<IExamSession>(
       type: String,
       enum: ["active", "completed", "expired"],
       default: "active",
+    },
+    result: {
+      type: SessionResultSchema,
+      required: false,
     },
   },
   { timestamps: true }

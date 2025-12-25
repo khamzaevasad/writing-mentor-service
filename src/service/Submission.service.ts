@@ -46,6 +46,35 @@ class SubmissionService {
       throw err;
     }
   }
+
+  // getSubmissionsBySession
+  public async getSubmissionsBySession(sessionId: string | Types.ObjectId) {
+    try {
+      const submissions = await this.submissionModel.aggregate([
+        { $match: { sessionId: new Types.ObjectId(sessionId) } },
+        {
+          $lookup: {
+            from: "writingTask",
+            localField: "taskId",
+            foreignField: "_id",
+            as: "writingTask",
+          },
+        },
+        {
+          $addFields: {
+            questionNumber: { $arrayElemAt: ["$writingTask.question", [0]] },
+          },
+        },
+        { $sort: { questionNumber: 1 } },
+      ]);
+
+      console.log(`Found ${submissions.length} submissions for session`);
+      return submissions;
+    } catch (err) {
+      console.log("Error model: getSubmissionsBySession", err);
+      throw err;
+    }
+  }
 }
 
 export default SubmissionService;

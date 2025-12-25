@@ -10,6 +10,7 @@ import {
 } from "../libs/types/evaluation.type";
 import logger from "../libs/utils/logger";
 import AIService from "./AI.service";
+import { log } from "console";
 
 class EvaluationService {
   private readonly evaluationModel;
@@ -21,6 +22,7 @@ class EvaluationService {
     this.aiService = new AIService();
   }
 
+  // evaluateSubmission
   public async evaluateSubmission(submissionId: string | Types.ObjectId) {
     try {
       const submission = await this.submission.findSubmitAnswer(submissionId);
@@ -126,6 +128,115 @@ class EvaluationService {
       return savedEvaluation;
     } catch (err) {
       throw err;
+    }
+  }
+
+  // getSubmissionsBySession
+  public async evaluateSessionSubmissions(sessionId: string | Types.ObjectId) {
+    try {
+      const submissions = await this.submission.getSubmissionsBySession(
+        sessionId
+      );
+
+      if (!submissions || submissions.length === 0) {
+        throw new Errors(HttpCode.NOT_FOUND, Message.SUBMISSION_NOT_FOUND);
+      }
+
+      if (submissions.length !== 4) {
+        throw new Error(
+          `Expected 4 submissions, but found ${submissions.length}`
+        );
+      }
+
+      logger.info(`Found ${submissions.length} submissions to evaluate`);
+      logger.info(`startting parallel AI evaluation...`);
+
+      const evaluationPromises = submissions.map((submission) =>
+        this.evaluateSubmission(submission._id.toString())
+      );
+
+      const evaluations = await Promise.all(evaluationPromises);
+
+      const result = this.calculateSessionScore(evaluations, submissions);
+
+      logger.info("Generating overAll feedback...");
+      const overallFeedback = await this.generateOverallFeedback(evaluations);
+
+      return {
+        sessionId: sessionId.toString(),
+        totalScore: result.totalScore,
+        breakdown: result.breakdown,
+        evaluations: evaluations.map((evaluation, index) => ({
+          questionNumber: submissions[index].writingTask[0].question,
+          evaluationId: evaluation._id,
+          score: evaluation.totalScore,
+          feedback: evaluation.feedback,
+        })),
+      };
+    } catch (err) {
+      console.log("Error model: evaluateSessionSubmissions", err);
+      throw err;
+    }
+  }
+  // calculateSessionScore
+  private calculateSessionScore(evaluations: any[], submissions: any[]) {
+    const breakdown = {
+      question51: { score: 0, maxScore: 10, percentage: 0 },
+      question52: { score: 0, maxScore: 10, percentage: 0 },
+      question53: { score: 0, maxScore: 30, percentage: 0 },
+      question54: { score: 0, maxScore: 50, percentage: 0 },
+    };
+
+    let totalScore = 0;
+
+    evaluations.forEach((evaluation, index) => {
+      const questionNumber = submissions[index].writingTask[0].question;
+      const score = evaluation.totalScore;
+
+      switch (questionNumber) {
+        case 51:
+          breakdown.question51.score = score;
+          breakdown.question51.percentage = (score / 10) * 100;
+          totalScore += score;
+          break;
+        case 52:
+          breakdown.question52.score = score;
+          breakdown.question52.percentage = (score / 10) * 100;
+          totalScore += score;
+          break;
+        case 53:
+          breakdown.question53.score = score;
+          breakdown.question53.percentage = (score / 30) * 100;
+          totalScore += score;
+          break;
+        case 54:
+          breakdown.question54.score = score;
+          breakdown.question54.percentage = (score / 50) * 100;
+          totalScore += score;
+          break;
+      }
+    });
+
+    return { totalScore, breakdown };
+  }
+
+  // generateOverallFeedback
+  private async generateOverallFeedback(evaluations: any[]): Promise<string> {
+    try {
+      const feedbacks = evaluations.map((evaluation, index) => ({
+        question: 51 + index,
+        score: evaluation.totalScore,
+        feedback: evaluation.feedback,
+        missingConcepts: evaluation.missingConcepts,
+      }));
+
+      const overallFeedback = await this.aiService.generateOverallFeedback(
+        feedbacks
+      );
+      return overallFeedback;
+    } catch (err) {
+      logger.error("Error generating overall feedback:", err);
+      return "Evaluation completed. Check individual question feedback for details.";
     }
   }
 }
