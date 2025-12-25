@@ -9,6 +9,7 @@ import ExamSessionService from "../service/ExamSession.service";
 const submissionController: T = {};
 const submissionService = new SubmissionService();
 const examSessionService = new ExamSessionService();
+
 submissionController.submitAnswer = async (
   req: ExtendedRequest,
   res: Response
@@ -48,13 +49,11 @@ submissionController.submitAnswer = async (
       sessionId,
       content,
     });
-    res
-      .status(HttpCode.OK)
-      .json({
-        success: true,
-        message: "Answer submitted successfully",
-        data: result,
-      });
+    res.status(HttpCode.OK).json({
+      success: true,
+      message: "Answer submitted successfully",
+      data: result,
+    });
   } catch (err) {
     logger.error("submitAnswer", err);
     if (err instanceof Errors) res.status(err.code).json(err);

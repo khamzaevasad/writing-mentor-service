@@ -62,7 +62,7 @@ class SubmissionService {
         },
         {
           $addFields: {
-            questionNumber: { $arrayElemAt: ["$writingTask.question", [0]] },
+            questionNumber: { $arrayElemAt: ["$writingTask.question", 0] },
           },
         },
         { $sort: { questionNumber: 1 } },

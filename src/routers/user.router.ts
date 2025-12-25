@@ -58,6 +58,12 @@ userRouter.post(
 );
 
 userRouter.post(
+  "/check-results",
+  authController.verifyAuth,
+  evaluationController.evaluateSessionSubmissions
+);
+
+userRouter.post(
   "/start",
   authController.verifyAuth,
   examSessionController.startExamSession

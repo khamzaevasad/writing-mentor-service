@@ -149,7 +149,7 @@ class EvaluationService {
       }
 
       logger.info(`Found ${submissions.length} submissions to evaluate`);
-      logger.info(`startting parallel AI evaluation...`);
+      logger.info(`starting parallel AI evaluation...`);
 
       const evaluationPromises = submissions.map((submission) =>
         this.evaluateSubmission(submission._id.toString())
