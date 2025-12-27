@@ -14,7 +14,9 @@ import {
   AUTH_TIMER_ACCESS,
   AUTH_TIMER_REFRESH_HOURS,
 } from "../libs/config/config";
-import transporter from "../libs/config/nodemailer";
+import { sendWelcomeEmail } from "../libs/config/email/signup.message";
+import { sendVerificationOtpEmail } from "../libs/config/email/verify.message";
+import { sendPasswordResetOtpEmail } from "../libs/config/email/resetPw.message";
 const authController: T = {};
 
 const authService = new AuthService();
@@ -55,52 +57,10 @@ authController.signup = async (req: Request, res: Response) => {
     await userService.updateRefreshToken(result._id, refreshToken);
 
     res.cookie("accessToken", accessToken, getAccessTokenCookieOptions());
-    res.cookie("refreshToken", accessToken, getRefreshTokenCookieOptions());
+    res.cookie("refreshToken", refreshToken, getRefreshTokenCookieOptions());
 
     // Sending welcome email
-    const mailOptions = {
-      from: process.env.SENDER_EMAIL,
-      to: input.userEmail,
-      subject: "Xush kelibsiz, Writing Mentor jamoasiga! ✍️ Boshlaymizmi?",
-      text: `Hurmatli foydalanuvchi,\n\nWriting Mentor platformasiga xush kelibsiz! Sizning hisobingiz ${input.userEmail} email bilan muvaffaqiyatli yaratildi.\n\nEndi yozish ko'nikmalaringizni oshiring va mentorlarimiz yordamidan foydalaning.\n\nHisobingizga kirish: [veb-sayt linki]\n\nSavollaringiz bo'lsa, javob beramiz!\n\nWriting Mentor jamoasi`, // Plain text versiya (HTML bo'lmagan klientlar uchun)
-      html: `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <title>Xush kelibsiz!</title>
-      <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .header { background: #4a90e2; color: white; text-align: center; padding: 30px; }
-        .content { padding: 30px; text-align: center; }
-        .btn { display: inline-block; background: #4a90e2; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
-        .footer { background: #eee; padding: 20px; text-align: center; font-size: 12px; color: #666; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>Xush kelibsiz, Writing Mentor'ga! ✍️</h1>
-        </div>
-        <div class="content">
-          <p>Hurmatli foydalanuvchi,</p>
-          <p>Sizning hisobingiz <strong>${input.userEmail}</strong> bilan muvaffaqiyatli yaratildi. Endi yozish ko'nikmalaringizni rivojlantirish vaqti keldi!</p>
-          <p>Writing Mentor sizga professional yozish bo'yicha maslahatlar, mashqlar va mentor yordamini taklif qiladi. Birinchi qadamingizni qo'ying va platformamizni sinab ko'ring.</p>
-          <a href="https://your-website.com/login" class="btn">Hisobga kirish</a>
-          <p>Yana savollaringiz bo'lsa, bizga yozing – doim yordam beramiz!</p>
-        </div>
-        <div class="footer">
-          <p>Writing Mentor jamoasi ❤️</p>
-          <p><a href="https://your-website.com">Veb-sayt</a> | <a href="https://instagram.com/yourhandle">Instagram</a> | <a href="https://telegram.com/yourhandle">Telegram</a></p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `,
-    };
-
-    await transporter.sendMail(mailOptions);
+    sendWelcomeEmail(input.userEmail, input.userName).catch(() => {});
     res.status(HttpCode.OK).json({ user: result, accessToken: accessToken });
   } catch (err) {
     logger.error("Error signup", err);
@@ -225,13 +185,7 @@ authController.generateVerifyOtp = async (
   try {
     logger.info("generateVerifyOtp");
     const { email, otp } = await userService.generateVerifyOtp(req.user);
-
-    await transporter.sendMail({
-      from: process.env.SENDER_EMAIL,
-      to: email,
-      subject: "Account Verification OTP",
-      text: `Your OTP is ${otp}`,
-    });
+    await sendVerificationOtpEmail(email, otp);
     res.status(HttpCode.OK).json({ success: true, message: "OTP sent" });
   } catch (err) {
     logger.error("generateVerifyOtp", err);
@@ -270,12 +224,7 @@ authController.sendResetOtp = async (req: Request, res: Response) => {
 
     const { email, otp } = await userService.sendResetOtp(userEmail);
 
-    await transporter.sendMail({
-      from: process.env.SENDER_EMAIL,
-      to: email,
-      subject: "Password Reset OTP",
-      text: `Your OTP for resetting your password is ${otp}. Use this OTP to proceed with resetting your password`,
-    });
+    await sendPasswordResetOtpEmail(email, otp);
     res
       .status(HttpCode.OK)
       .json({ success: "true", message: "OTP sent Your email" });
