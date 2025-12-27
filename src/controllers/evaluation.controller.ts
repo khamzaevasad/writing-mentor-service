@@ -35,6 +35,7 @@ evaluationController.evaluateSubmission = async (
   }
 };
 
+// evaluateSessionSubmissions
 evaluationController.evaluateSessionSubmissions = async (
   req: ExtendedRequest,
   res: Response
